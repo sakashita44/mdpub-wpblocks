@@ -1,0 +1,17 @@
+{
+  "name": "mdpub-wpblocks",
+  "version": "0.1.0",
+  "description": "Markdown を Gutenberg ブロックに変換し WordPress REST API 経由で投稿するツール",
+  "type": "module",
+  "scripts": {
+    "convert": "node scripts/convert.mjs",
+    "upload-media": "node scripts/upload-media.mjs",
+    "publish": "node scripts/publish.mjs"
+  },
+  "author": "sakashita44",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sakashita44/mdpub-wpblocks.git"
+  }
+}
