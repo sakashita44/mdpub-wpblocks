@@ -216,6 +216,17 @@ https://www.youtube.com/watch?v=xxxxx
 
 `posts/.registry.yaml` に配置。メディア ID と記事 ID を管理する。
 
+### 設計方針
+
+- **正（source of truth）はサーバ**。`.registry.yaml` はサーバ状態のローカルキャッシュ
+- 破損・削除・乖離が発生しても、サーバから再生成できる
+  - 記事: `GET /wp/v2/posts?slug=<slug>` で post_id を取得
+  - メディア: `GET /wp/v2/media?search=<filename>` でメディア ID/URL を取得
+- `publish` / `upload-media` 実行時に registry にエントリがなければ、サーバに問い合わせて既存チェック（フォールバック動作）
+- `npm run sync` で全エントリをサーバから一括再生成
+
+### 構造
+
 ```yaml
 posts:
   article-slug:
