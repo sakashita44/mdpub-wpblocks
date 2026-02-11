@@ -10,6 +10,7 @@
 | REST API       | Application Password 認証                     |
 | 必須プラグイン | KaTeX（数式レンダリング、ショートコード対応） |
 | 任意プラグイン | Syntax Highlighting Code Block（Prism.js）    |
+| 非対応         | メディアファイル名を自動変更するプラグイン    |
 
 ## 記事ディレクトリ規約
 
@@ -162,19 +163,44 @@ https://www.youtube.com/watch?v=xxxxx
 | 同名検索     | `GET /wp/v2/media?search=<filename>` | 既存メディアの重複チェック |
 | アップロード | `POST /wp/v2/media`                  | 画像を 1 枚ずつ送信        |
 
+### ファイル名命名規則
+
+アップロード時のファイル名を `<slug>-<original-filename>` に変換する。
+
+```
+ローカル: posts/article-a/images/photo.jpg
+WP 上:   article-a-photo.jpg
+```
+
+- slug プレフィックスにより、異なる記事の同名画像がサーバ上で衝突しない
+- sync 時にファイル名から記事 slug を特定でき、ローカルパスとの突合が確実になる
+
 ### フロー
 
 1. MD 本文中の画像参照（`images/` 内および `../shared/` 内）を走査し、ローカル相対パスを解決
-2. ファイル名で WP メディアライブラリを検索
-3. 同名ファイルが既存なら既存メディア ID を再利用（スキップ）、未登録ならアップロード
-4. スキップ・アップロードの結果をログ出力
-5. 取得したメディア ID・URL を `.registry.yaml` に記録
+2. ファイル名を `<slug>-<original-filename>` に変換
+3. 変換後のファイル名で WP メディアライブラリを検索
+4. 同名ファイルが既存なら既存メディア ID を再利用（スキップ）、未登録ならアップロード
+5. スキップ・アップロードの結果をログ出力
+6. 取得したメディア ID・URL を `.registry.yaml` に記録
+
+shared 画像は slug プレフィックスを付与せず、元のファイル名のままアップロードする。
 
 ### 同名画像の衝突ポリシー
 
 - デフォルト: 同名ファイルが既存の場合スキップ（既存メディア ID を再利用）
 - `--force-upload` オプションで強制再アップロード
 - ハッシュ比較は行わない（ファイル名一致 = 同一画像とみなす）
+
+### `--force-upload` の動作
+
+既存メディアを DELETE してから再アップロードすることで、WP のサフィックス自動付与（`-1`, `-2`）を回避する。
+
+```
+1. GET /wp/v2/media?search=<slug>-<filename> → id: 456
+2. DELETE /wp/v2/media/456?force=true
+3. POST /wp/v2/media （同じファイル名で新規アップロード）
+```
 
 ## 記事投稿仕様（Issue #7）
 
@@ -223,7 +249,7 @@ https://www.youtube.com/watch?v=xxxxx
   - 記事: `GET /wp/v2/posts?slug=<slug>` で post_id を取得
   - メディア: `GET /wp/v2/media?search=<filename>` でメディア ID/URL を取得
 - `publish` / `upload-media` 実行時に registry にエントリがなければ、サーバに問い合わせて既存チェック（フォールバック動作）
-- `npm run sync` で全エントリをサーバから一括再生成
+- `npm run sync` で全エントリをサーバから一括再生成（後述）
 
 ### 構造
 
@@ -248,6 +274,17 @@ shared:
 - `posts.<slug>.post_id`: 記事の WordPress 投稿 ID
 - `posts.<slug>.media.<path>`: 記事固有画像のメディア情報
 - `shared.<filename>`: 共通リソースのメディア情報
+
+### sync の復元ロジック
+
+`npm run sync` は以下の手順で `.registry.yaml` をサーバから再生成する。
+
+1. `posts/` 内の各記事ディレクトリを走査し、Markdown 内の画像参照を収集
+2. 記事ごとに `GET /wp/v2/posts?slug=<slug>` で post_id を取得
+3. 記事画像: `GET /wp/v2/media?search=<slug>-<filename>` でメディア ID・URL を取得し、ローカルパスと紐づけ
+4. shared 画像: `GET /wp/v2/media?search=<filename>` で取得
+
+slug プレフィックス命名規則により、ステップ 3 の突合が一意に決まる。
 
 ## 認証
 
