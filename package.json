@@ -8,8 +8,9 @@
         "upload-media": "node scripts/upload-media.mjs",
         "publish": "node scripts/publish.mjs",
         "prepare": "husky",
-        "lint": "eslint 'lib/**/*.mjs' 'scripts/**/*.mjs' && markdownlint-cli2 '**/*.md' '#node_modules'",
-        "format": "prettier --write '**/*.{mjs,json,md}' && eslint --fix 'lib/**/*.mjs' 'scripts/**/*.mjs'"
+        "test": "vitest run",
+        "lint": "eslint 'lib/**/*.mjs' 'scripts/**/*.mjs' 'test/**/*.mjs' && markdownlint-cli2 '**/*.md' '#node_modules'",
+        "format": "prettier --write '**/*.{mjs,json,md}' && eslint --fix 'lib/**/*.mjs' 'scripts/**/*.mjs' 'test/**/*.mjs'"
     },
     "author": "sakashita44",
     "license": "MIT",
@@ -31,6 +32,7 @@
         "husky": "^9.1.7",
         "lint-staged": "^16.2.7",
         "markdownlint-cli2": "^0.20.0",
-        "prettier": "^3.8.1"
+        "prettier": "^3.8.1",
+        "vitest": "^4.0.18"
     }
 }
