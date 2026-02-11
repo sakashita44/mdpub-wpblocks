@@ -14,6 +14,11 @@ npm run upload-media -- posts/my-article/       # 画像アップロード
 npm run publish -- posts/my-article/index.md    # 記事投稿
 ```
 
+```bash
+npm run lint      # ESLint + markdownlint チェック
+npm run format    # Prettier + ESLint 自動修正
+```
+
 Prettier + ESLint + markdownlint を pre-commit フック（husky + lint-staged）で自動実行。
 
 ## アーキテクチャ

@@ -8,8 +8,9 @@
         "upload-media": "node scripts/upload-media.mjs",
         "publish": "node scripts/publish.mjs",
         "prepare": "husky",
-        "lint": "eslint 'lib/**/*.mjs' 'scripts/**/*.mjs' && markdownlint-cli2 '**/*.md' '#node_modules'",
-        "format": "prettier --write '**/*.{mjs,json,md}' && eslint --fix 'lib/**/*.mjs' 'scripts/**/*.mjs'"
+        "test": "vitest run",
+        "lint": "eslint 'lib/**/*.mjs' 'scripts/**/*.mjs' 'test/**/*.mjs' && markdownlint-cli2 '**/*.md' '#node_modules'",
+        "format": "prettier --write '**/*.{mjs,json,md}' && eslint --fix 'lib/**/*.mjs' 'scripts/**/*.mjs' 'test/**/*.mjs'"
     },
     "author": "sakashita44",
     "license": "MIT",
@@ -20,7 +21,9 @@
     "dependencies": {
         "@wordpress/block-library": "^9.39.0",
         "@wordpress/blocks": "^15.12.0",
-        "happy-dom": "^20.6.0"
+        "gray-matter": "^4.0.3",
+        "happy-dom": "^20.6.0",
+        "markdown-it": "^14.1.1"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
@@ -29,6 +32,7 @@
         "husky": "^9.1.7",
         "lint-staged": "^16.2.7",
         "markdownlint-cli2": "^0.20.0",
-        "prettier": "^3.8.1"
+        "prettier": "^3.8.1",
+        "vitest": "^4.0.18"
     }
 }

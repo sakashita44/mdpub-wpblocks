@@ -58,11 +58,11 @@ date: '2026-02-10' # 任意（未指定なら投稿時の日時）
 
 ### 基本ブロック（Issue #3）
 
-| Markdown                      | Gutenberg ブロック | 変換仕様                                          |
-| ----------------------------- | ------------------ | ------------------------------------------------- |
-| 段落テキスト                  | `core/paragraph`   | `{ content: "<inline HTML>" }`                    |
-| `# 見出し` 〜 `###### 見出し` | `core/heading`     | `{ content: "<inline HTML>", level: 1-6 }`        |
-| ` ```lang ... ``` `           | `core/code`        | `{ content: "<escaped code>", language: "lang" }` |
+| Markdown                      | Gutenberg ブロック | 変換仕様                                                    |
+| ----------------------------- | ------------------ | ----------------------------------------------------------- |
+| 段落テキスト                  | `core/paragraph`   | `{ content: "<inline HTML>" }`                              |
+| `# 見出し` 〜 `###### 見出し` | `core/heading`     | `{ content: "<inline HTML>", level: 1-6 }`                  |
+| ` ```lang ... ``` `           | `core/code`        | `{ content: "<escaped code>", className: "language-lang" }` |
 
 #### インライン要素
 

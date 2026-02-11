@@ -53,6 +53,15 @@ WP_USER=your-username
 WP_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx-xxxx-xxxx
 ```
 
+### 開発ツール
+
+`npm install` で pre-commit フック（husky）が自動セットアップされる。コミット時に lint-staged が Prettier / ESLint / markdownlint を実行する。
+
+```bash
+npm run lint      # ESLint + markdownlint チェック
+npm run format    # Prettier + ESLint 自動修正
+```
+
 ## 使い方
 
 ### Markdown → ブロック HTML 変換
