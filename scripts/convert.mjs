@@ -5,7 +5,7 @@
  * ブロック HTML を stdout に出力する。
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { serialize } from '../lib/wp-env.mjs';
 import { parseMd } from '../lib/md-parser.mjs';
 import { transformTokens } from '../lib/block-transforms/index.mjs';
@@ -13,6 +13,11 @@ import { transformTokens } from '../lib/block-transforms/index.mjs';
 const mdPath = process.argv[2];
 if (!mdPath) {
     console.error('使い方: npm run convert -- <path-to-md>');
+    process.exit(1);
+}
+
+if (!existsSync(mdPath)) {
+    console.error(`エラー: ファイルが見つかりません: ${mdPath}`);
     process.exit(1);
 }
 
