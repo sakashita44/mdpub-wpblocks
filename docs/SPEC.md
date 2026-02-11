@@ -20,9 +20,8 @@ posts/
 │   ├─ index.md             ← frontmatter + 本文
 │   └─ images/
 │       └─ *.jpg / *.png
-├─ shared/                  ← 記事横断の共通リソース
-│   └─ logo.png
-└─ .registry.yaml           ← slug→post_id, メディア ID 管理
+└─ shared/                  ← 記事横断の共通リソース
+    └─ logo.png
 ```
 
 - 各記事は `posts/<slug>/` ディレクトリに `index.md` として配置
@@ -158,48 +157,50 @@ https://www.youtube.com/watch?v=xxxxx
 
 ### API
 
-| 操作         | エンドポイント                       | 用途                       |
-| ------------ | ------------------------------------ | -------------------------- |
-| 同名検索     | `GET /wp/v2/media?search=<filename>` | 既存メディアの重複チェック |
-| アップロード | `POST /wp/v2/media`                  | 画像を 1 枚ずつ送信        |
+| 操作         | エンドポイント                     | 用途                       |
+| ------------ | ---------------------------------- | -------------------------- |
+| 既存チェック | `GET /wp/v2/media?slug=<slug>`     | slug 完全一致で既存メディアを検索 |
+| アップロード | `POST /wp/v2/media`                | 画像を 1 枚ずつ送信        |
+| 削除         | `DELETE /wp/v2/media/<id>?force=true` | `--force-upload` 時に使用 |
 
 ### ファイル名命名規則
 
-アップロード時のファイル名を `<slug>-<original-filename>` に変換する。
+アップロード時のファイル名にプレフィックスを付与する。
 
-```
-ローカル: posts/article-a/images/photo.jpg
-WP 上:   article-a-photo.jpg
-```
+| 画像の種別 | ローカルパス例 | アップロード時ファイル名 |
+| ---------- | -------------- | ------------------------ |
+| 記事固有   | `posts/article-a/images/photo.jpg` | `article-a-photo.jpg` |
+| 共通       | `posts/shared/logo.png`            | `shared-logo.png`     |
 
-- slug プレフィックスにより、異なる記事の同名画像がサーバ上で衝突しない
-- sync 時にファイル名から記事 slug を特定でき、ローカルパスとの突合が確実になる
+- 記事画像: `<article-slug>-<filename>`
+- 共通画像: `shared-<filename>`
+- プレフィックスにより、異なる記事の同名画像がサーバ上で衝突しない
 
 ### フロー
 
 1. MD 本文中の画像参照（`images/` 内および `../shared/` 内）を走査し、ローカル相対パスを解決
-2. ファイル名を `<slug>-<original-filename>` に変換
-3. 変換後のファイル名で WP メディアライブラリを検索
-4. 同名ファイルが既存なら既存メディア ID を再利用（スキップ）、未登録ならアップロード
-5. スキップ・アップロードの結果をログ出力
-6. 取得したメディア ID・URL を `.registry.yaml` に記録
-
-shared 画像は slug プレフィックスを付与せず、元のファイル名のままアップロードする。
+2. 命名規則に従いアップロード用ファイル名を決定（記事画像: `<slug>-<filename>`、共通画像: `shared-<filename>`）
+3. ファイル名から期待される WP メディア slug を算出
+4. `GET /wp/v2/media?slug=<expected-slug>` で既存チェック（完全一致）
+5. 既存ならスキップ、未登録ならアップロード
+6. アップロード後、レスポンスの slug が期待値と一致するか検証（不一致ならエラー終了）
+7. スキップ・アップロード・エラーの結果をログ出力
 
 ### 同名画像の衝突ポリシー
 
-- デフォルト: 同名ファイルが既存の場合スキップ（既存メディア ID を再利用）
+- デフォルト: slug 一致するメディアが既存の場合スキップ
 - `--force-upload` オプションで強制再アップロード
-- ハッシュ比較は行わない（ファイル名一致 = 同一画像とみなす）
+- ハッシュ比較は行わない（slug 一致 = 同一画像とみなす）
 
 ### `--force-upload` の動作
 
 既存メディアを DELETE してから再アップロードすることで、WP のサフィックス自動付与（`-1`, `-2`）を回避する。
 
 ```
-1. GET /wp/v2/media?search=<slug>-<filename> → id: 456
+1. GET /wp/v2/media?slug=<expected-slug> → id: 456
 2. DELETE /wp/v2/media/456?force=true
-3. POST /wp/v2/media （同じファイル名で新規アップロード）
+3. POST /wp/v2/media（同じファイル名で新規アップロード）
+4. レスポンスの slug を検証
 ```
 
 ## 記事投稿仕様（Issue #7）
@@ -231,60 +232,53 @@ shared 画像は slug プレフィックスを付与せず、元のファイル�
 
 ### 新規/更新判定
 
-- `.registry.yaml` の slug→post_id マッピングで判定
-- post_id が存在すれば `PUT`（更新）、なければ `POST`（新規）
+- `GET /wp/v2/posts?slug=<slug>` でサーバに問い合わせ
+- 既存記事が見つかれば `PUT /wp/v2/posts/<id>`（更新）、なければ `POST`（新規）
 
 ### 画像 URL 置換
 
-投稿時に、ブロック HTML 内のローカル画像パスを `.registry.yaml` から取得したメディア URL に置換する。
+投稿時に、ブロック HTML 内のローカル画像パスを WP メディア URL に置換する。
 
-## .registry.yaml 仕様
+1. ローカルパスから命名規則に基づき WP メディア slug を算出
+2. `GET /wp/v2/media?slug=<slug>` でメディア URL を取得
+3. ブロック HTML 内のローカルパスを取得した URL に置換
 
-`posts/.registry.yaml` に配置。メディア ID と記事 ID を管理する。
+## ステートレス設計
+
+ローカルに状態ファイルを持たず、毎回サーバに問い合わせる。
 
 ### 設計方針
 
-- **正（source of truth）はサーバ**。`.registry.yaml` はサーバ状態のローカルキャッシュ
-- 破損・削除・乖離が発生しても、サーバから再生成できる
-  - 記事: `GET /wp/v2/posts?slug=<slug>` で post_id を取得
-  - メディア: `GET /wp/v2/media?search=<filename>` でメディア ID/URL を取得
-- `publish` / `upload-media` 実行時に registry にエントリがなければ、サーバに問い合わせて既存チェック（フォールバック動作）
-- `npm run sync` で全エントリをサーバから一括再生成（後述）
+- **source of truth はサーバ**。ローカルに ID や URL のキャッシュを保持しない
+- 命名規則（`<slug>-<filename>` / `shared-<filename>`）により、ローカルパスから WP メディア slug を決定論的に算出できる
+- サーバ問い合わせには `slug` パラメータ（完全一致）を使用。`search`（部分一致）は使わない
 
-### 構造
+### 制御の境界
 
-```yaml
-posts:
-  article-slug:
-    post_id: 123
-    media:
-      images/photo.jpg:
-        id: 456
-        url: "https://example.com/wp-content/uploads/2026/02/photo.jpg"
-      ../shared/logo.png:
-        id: 789
-        url: "https://example.com/wp-content/uploads/2026/02/logo.png"
+**ツール側が制御するもの:**
 
-shared:
-  logo.png:
-    id: 789
-    url: "https://example.com/wp-content/uploads/2026/02/logo.png"
-```
+- 記事 slug — frontmatter で明示定義
+- メディアファイル名 — ローカルファイルシステム上の名前
+- 命名規則 — `<article-slug>-<filename>` / `shared-<filename>`
+- → ローカルパスから WP メディア slug への変換は決定論的な純粋関数
 
-- `posts.<slug>.post_id`: 記事の WordPress 投稿 ID
-- `posts.<slug>.media.<path>`: 記事固有画像のメディア情報
-- `shared.<filename>`: 共通リソースのメディア情報
+**WordPress が制御するもの:**
 
-### sync の復元ロジック
+- slug のグローバル一意性制約（投稿・固定ページ・メディア等の全 post type で一意）
+- slug の sanitize（小文字化、記号→ハイフン変換、連続ハイフンの圧縮）
+- メディア ID・URL の付与
 
-`npm run sync` は以下の手順で `.registry.yaml` をサーバから再生成する。
+### 既知の破壊ポイント
 
-1. `posts/` 内の各記事ディレクトリを走査し、Markdown 内の画像参照を収集
-2. 記事ごとに `GET /wp/v2/posts?slug=<slug>` で post_id を取得
-3. 記事画像: `GET /wp/v2/media?search=<slug>-<filename>` でメディア ID・URL を取得し、ローカルパスと紐づけ
-4. shared 画像: `GET /wp/v2/media?search=<filename>` で取得
+ツール側の slug 算出と WP 側の slug 付与が一致しない場合、ステートレス設計は機能しない。
 
-slug プレフィックス命名規則により、ステップ 3 の突合が一意に決まる。
+| 状況 | 影響 | 対処 |
+| ---- | ---- | ---- |
+| メディア slug が他の post type と衝突し WP が `-2` を付与 | 次回実行時に既存メディアを発見できず再アップロード | アップロード後にレスポンスの slug を検証し、不一致ならエラー終了。ユーザーが衝突元を解消して再実行 |
+| WP 管理画面からメディアの slug を手動変更 | 同上 | 運用規約: 本ツール管理下のメディアは WP 側で slug を変更しない |
+| WP の将来バージョンで media slug 生成ロジックが変更 | slug 算出が不可能になる | その時点でキャッシュ層を追加する対応（現時点では YAGNI） |
+
+個人ブログで自分だけが操作する前提では、いずれも発生頻度は極めて低い。アップロード後の slug 検証により、問題が発生した場合は即座に検知できる。
 
 ## 認証
 

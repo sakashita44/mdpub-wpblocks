@@ -7,7 +7,7 @@
 - `@wordpress/blocks` を使用した正確な Gutenberg ブロック生成
 - Frontmatter によるメタデータ管理（タイトル、カテゴリ、タグ等）
 - メディアの自動アップロードと URL 置換
-- `.registry.yaml` による投稿・メディアの状態管理（新規/更新の自動判定）
+- ステートレス設計（ローカルに状態ファイルを持たず、命名規則とサーバ問い合わせで動作）
 
 ## 対応ブロック
 
@@ -105,13 +105,12 @@ mdpub-wpblocks/
 │   ├─ block-transforms/       ← AST → createBlock() 変換
 │   ├─ inline-format.mjs       ← インライン要素 HTML 変換
 │   ├─ wp-client.mjs           ← REST API クライアント
-│   └─ registry.mjs            ← .registry.yaml 読み書き
+│   └─ media-slug.mjs          ← ローカルパス → WP メディア slug 算出
 ├─ scripts/
 │   ├─ convert.mjs             ← CLI: MD → ブロック HTML
 │   ├─ upload-media.mjs        ← CLI: 画像アップロード
 │   └─ publish.mjs             ← CLI: 記事投稿
 ├─ posts/                      ← 記事ファイル (.gitignore)
-│   └─ .registry.yaml         ← メディア/記事 ID 管理 (.gitignore)
 └─ docs/
     ├─ SPEC.md                 ← 技術仕様書
     └─ PROGRESS.md             ← 開発進捗
