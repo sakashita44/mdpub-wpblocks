@@ -14,7 +14,7 @@
 
 ## 記事ディレクトリ規約
 
-```
+```text
 posts/
 ├─ <article-slug>/
 │   ├─ index.md             ← frontmatter + 本文
@@ -32,15 +32,15 @@ posts/
 
 ```yaml
 ---
-title: "記事タイトル"
-slug: "article-slug"
+title: '記事タイトル'
+slug: 'article-slug'
 categories:
-  - diary
+    - diary
 tags:
-  - tag1
-featured_image: "images/cover.jpg"   # 任意
-excerpt: "抜粋テキスト..."            # 任意
-date: "2026-02-10"                   # 任意（未指定なら投稿時の日時）
+    - tag1
+featured_image: 'images/cover.jpg' # 任意
+excerpt: '抜粋テキスト...' # 任意
+date: '2026-02-10' # 任意（未指定なら投稿時の日時）
 ---
 ```
 
@@ -53,7 +53,6 @@ date: "2026-02-10"                   # 任意（未指定なら投稿時の日�
 | `featured_image` | string   |      | アイキャッチ画像の相対パス                 |
 | `excerpt`        | string   |      | 抜粋テキスト                               |
 | `date`           | string   |      | 投稿日（ISO 8601、未指定なら投稿時の日時） |
-
 
 ## Markdown 対応記法と変換ルール
 
@@ -145,8 +144,8 @@ https://www.youtube.com/watch?v=xxxxx
 
 ```markdown
 :::columns
-![alt1](images/a.jpg "キャプション1")
-![alt2](images/b.jpg "キャプション2")
+![alt1](images/a.jpg 'キャプション1')
+![alt2](images/b.jpg 'キャプション2')
 :::
 ```
 
@@ -157,20 +156,20 @@ https://www.youtube.com/watch?v=xxxxx
 
 ### API
 
-| 操作         | エンドポイント                     | 用途                       |
-| ------------ | ---------------------------------- | -------------------------- |
-| 既存チェック | `GET /wp/v2/media?slug=<slug>`     | slug 完全一致で既存メディアを検索 |
-| アップロード | `POST /wp/v2/media`                | 画像を 1 枚ずつ送信        |
-| 削除         | `DELETE /wp/v2/media/<id>?force=true` | `--force-upload` 時に使用 |
+| 操作         | エンドポイント                        | 用途                              |
+| ------------ | ------------------------------------- | --------------------------------- |
+| 既存チェック | `GET /wp/v2/media?slug=<slug>`        | slug 完全一致で既存メディアを検索 |
+| アップロード | `POST /wp/v2/media`                   | 画像を 1 枚ずつ送信               |
+| 削除         | `DELETE /wp/v2/media/<id>?force=true` | `--force-upload` 時に使用         |
 
 ### ファイル名命名規則
 
 アップロード時のファイル名にプレフィックスを付与する。
 
-| 画像の種別 | ローカルパス例 | アップロード時ファイル名 |
-| ---------- | -------------- | ------------------------ |
-| 記事固有   | `posts/article-a/images/photo.jpg` | `article-a-photo.jpg` |
-| 共通       | `posts/shared/logo.png`            | `shared-logo.png`     |
+| 画像の種別 | ローカルパス例                     | アップロード時ファイル名 |
+| ---------- | ---------------------------------- | ------------------------ |
+| 記事固有   | `posts/article-a/images/photo.jpg` | `article-a-photo.jpg`    |
+| 共通       | `posts/shared/logo.png`            | `shared-logo.png`        |
 
 - 記事画像: `<article-slug>-<filename>`
 - 共通画像: `shared-<filename>`
@@ -179,12 +178,12 @@ https://www.youtube.com/watch?v=xxxxx
 ### フロー
 
 1. MD 本文中の画像参照（`images/` 内および `../shared/` 内）を走査し、ローカル相対パスを解決
-2. 命名規則に従いアップロード用ファイル名を決定（記事画像: `<slug>-<filename>`、共通画像: `shared-<filename>`）
-3. ファイル名から期待される WP メディア slug を算出
-4. `GET /wp/v2/media?slug=<expected-slug>` で既存チェック（完全一致）
-5. 既存ならスキップ、未登録ならアップロード
-6. アップロード後、レスポンスの slug が期待値と一致するか検証（不一致ならエラー終了）
-7. スキップ・アップロード・エラーの結果をログ出力
+1. 命名規則に従いアップロード用ファイル名を決定（記事画像: `<slug>-<filename>`、共通画像: `shared-<filename>`）
+1. ファイル名から期待される WP メディア slug を算出
+1. `GET /wp/v2/media?slug=<expected-slug>` で既存チェック（完全一致）
+1. 既存ならスキップ、未登録ならアップロード
+1. アップロード後、レスポンスの slug が期待値と一致するか検証（不一致ならエラー終了）
+1. スキップ・アップロード・エラーの結果をログ出力
 
 ### 同名画像の衝突ポリシー
 
@@ -196,7 +195,7 @@ https://www.youtube.com/watch?v=xxxxx
 
 既存メディアを DELETE してから再アップロードすることで、WP のサフィックス自動付与（`-1`, `-2`）を回避する。
 
-```
+```text
 1. GET /wp/v2/media?slug=<expected-slug> → id: 456
 2. DELETE /wp/v2/media/456?force=true
 3. POST /wp/v2/media（同じファイル名で新規アップロード）
@@ -240,8 +239,8 @@ https://www.youtube.com/watch?v=xxxxx
 投稿時に、ブロック HTML 内のローカル画像パスを WP メディア URL に置換する。
 
 1. ローカルパスから命名規則に基づき WP メディア slug を算出
-2. `GET /wp/v2/media?slug=<slug>` でメディア URL を取得
-3. ブロック HTML 内のローカルパスを取得した URL に置換
+1. `GET /wp/v2/media?slug=<slug>` でメディア URL を取得
+1. ブロック HTML 内のローカルパスを取得した URL に置換
 
 ## ステートレス設計
 
@@ -272,11 +271,11 @@ https://www.youtube.com/watch?v=xxxxx
 
 ツール側の slug 算出と WP 側の slug 付与が一致しない場合、ステートレス設計は機能しない。
 
-| 状況 | 影響 | 対処 |
-| ---- | ---- | ---- |
+| 状況                                                      | 影響                                               | 対処                                                                                               |
+| --------------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | メディア slug が他の post type と衝突し WP が `-2` を付与 | 次回実行時に既存メディアを発見できず再アップロード | アップロード後にレスポンスの slug を検証し、不一致ならエラー終了。ユーザーが衝突元を解消して再実行 |
-| WP 管理画面からメディアの slug を手動変更 | 同上 | 運用規約: 本ツール管理下のメディアは WP 側で slug を変更しない |
-| WP の将来バージョンで media slug 生成ロジックが変更 | slug 算出が不可能になる | その時点でキャッシュ層を追加する対応（現時点では YAGNI） |
+| WP 管理画面からメディアの slug を手動変更                 | 同上                                               | 運用規約: 本ツール管理下のメディアは WP 側で slug を変更しない                                     |
+| WP の将来バージョンで media slug 生成ロジックが変更       | slug 算出が不可能になる                            | その時点でキャッシュ層を追加する対応（現時点では YAGNI）                                           |
 
 個人ブログで自分だけが操作する前提では、いずれも発生頻度は極めて低い。アップロード後の slug 検証により、問題が発生した場合は即座に検知できる。
 

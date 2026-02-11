@@ -14,13 +14,13 @@ npm run upload-media -- posts/my-article/       # 画像アップロード
 npm run publish -- posts/my-article/index.md    # 記事投稿
 ```
 
-テストフレームワーク・リンター未導入。
+Prettier + ESLint + markdownlint を pre-commit フック（husky + lint-staged）で自動実行。
 
 ## アーキテクチャ
 
 ### パイプライン
 
-```
+```text
 Markdown → (md-parser) → AST → (block-transforms) → createBlock() → serialize() → HTML
                                                                           ↓
                                                WordPress REST API ← (wp-client) ← publish

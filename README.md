@@ -47,7 +47,7 @@ npm install
 cp .env.example .env
 ```
 
-```
+```text
 WP_URL=https://your-site.com
 WP_USER=your-username
 WP_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx-xxxx-xxxx
@@ -79,15 +79,15 @@ npm run publish -- posts/my-article.md
 
 ```markdown
 ---
-title: "記事タイトル"
-slug: "article-slug"
+title: '記事タイトル'
+slug: 'article-slug'
 categories:
-  - diary
+    - diary
 tags:
-  - tag1
-featured_image: "images/cover.jpg"   # 任意
-excerpt: "抜粋テキスト..."            # 任意
-date: "2026-02-10"                   # 任意
+    - tag1
+featured_image: 'images/cover.jpg' # 任意
+excerpt: '抜粋テキスト...' # 任意
+date: '2026-02-10' # 任意
 ---
 
 本文をここに記述する。
@@ -97,7 +97,7 @@ date: "2026-02-10"                   # 任意
 
 ## ディレクトリ構成
 
-```
+```text
 mdpub-wpblocks/
 ├─ lib/
 │   ├─ wp-env.mjs              ← DOM ポリフィル + WP Blocks 初期化
