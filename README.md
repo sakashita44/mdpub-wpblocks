@@ -205,7 +205,9 @@ mdpub sync [--output <path>] [--content-root <path>]
 ## 開発
 
 ```bash
-npm run lint
+npm run fix       # format → lint を一括実行
+npm run lint      # チェックのみ
+npm run format    # 自動整形のみ
 npm test
 ```
 

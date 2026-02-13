@@ -15,8 +15,9 @@ npm run publish -- posts/my-article/index.md    # 記事投稿
 ```
 
 ```bash
-npm run lint      # ESLint + markdownlint チェック
-npm run format    # Prettier + ESLint 自動修正
+npm run fix       # format → lint を一括実行（推奨）
+npm run lint      # ESLint + markdownlint チェックのみ
+npm run format    # Prettier + ESLint 自動修正のみ
 ```
 
 Prettier + ESLint + markdownlint を pre-commit フック（husky + lint-staged）で自動実行。

@@ -7,10 +7,6 @@
 
 ## [Unreleased]
 
-### Added
-
-- （未記載）
-
 ## [1.0.0] - 2026-02-14
 
 ### Added
@@ -22,6 +18,9 @@
 - サーバ状態からレジストリ再生成 CLI（`sync`）
 - `--content-root` / `MDPUB_CONTENT_ROOT` / `.mdpub-wpblocks.json` による content root 解決
 - 対応ブロック: paragraph / heading / code / table / list / image / embed / html / columns / KaTeX shortcode
+- `mdpub` CLI エントリポイント（`bin/mdpub.mjs`）を追加し `npm link` / 将来の `npx` 実行に対応
+- `mdpub init` で `.env.example` / `.mdpub-wpblocks.json` の雛形生成
+- 必須環境変数（`WP_URL`, `WP_USER`, `WP_APP_PASSWORD`）未設定時のエラーメッセージ改善
 
 ### Documentation
 
