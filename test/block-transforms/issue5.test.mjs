@@ -94,4 +94,47 @@ describe('Issue #5 transforms', () => {
 
         warnSpy.mockRestore();
     });
+
+    it('空の :::columns で innerBlocks が空配列になる', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const { tokens } = parseMd(':::columns\n:::');
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/columns');
+        expect(blocks[0].innerBlocks).toHaveLength(0);
+
+        warnSpy.mockRestore();
+    });
+
+    it('クエリパラメータ付き URL を core/embed に変換', () => {
+        const url = 'https://example.com/video?a=1&b=2';
+        const { tokens } = parseMd(url);
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/embed');
+        expect(blocks[0].attributes.url).toBe(url);
+    });
+
+    it('末尾にピリオドが付いた URL もそのまま保持して core/embed に変換', () => {
+        const { tokens } = parseMd('https://example.com/page.');
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/embed');
+        expect(blocks[0].attributes.url).toBe('https://example.com/page.');
+    });
+
+    it('strong 内の数式を正しく変換', () => {
+        const { tokens } = parseMd('**式 $x^2$ です**');
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/paragraph');
+        const content = String(blocks[0].attributes.content);
+        expect(content).toContain('<strong>');
+        expect(content).toContain('[katex]x^2[/katex]');
+    });
 });

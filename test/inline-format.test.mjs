@@ -168,6 +168,13 @@ describe('renderInline', () => {
         expect(renderInline(tokens)).toBe('before [katex]x^2[/katex] after');
     });
 
+    it('1段落に複数のインライン数式を変換', () => {
+        const tokens = [textToken('$a$ and $b$')];
+        expect(renderInline(tokens)).toBe(
+            '[katex]a[/katex] and [katex]b[/katex]',
+        );
+    });
+
     it('エスケープされた $ は通常文字として扱う', () => {
         const tokens = [textToken('price is \\$10')];
         expect(renderInline(tokens)).toBe('price is $10');
@@ -178,14 +185,14 @@ describe('renderInline', () => {
         expect(renderInline(tokens)).toBe('see $$x^2$$ end');
     });
 
-    it('html_inline をエスケープして保持する', () => {
+    it('html_inline をパススルーして保持する', () => {
         const tokens = [
             textToken('before '),
             { type: 'html_inline', content: '<span class="x">ok</span>' },
             textToken(' after'),
         ];
         expect(renderInline(tokens)).toBe(
-            'before &lt;span class=&quot;x&quot;&gt;ok&lt;/span&gt; after',
+            'before <span class="x">ok</span> after',
         );
     });
 });
