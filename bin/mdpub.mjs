@@ -33,7 +33,7 @@ if (command === '--version' || command === '-v' || command === 'version') {
 }
 
 if (command === 'init') {
-    runInit(projectRoot);
+    runInit(process.cwd());
     process.exit(0);
 }
 
@@ -41,7 +41,7 @@ const scriptPath = subcommands.get(command);
 if (!scriptPath) {
     console.error(`不明なサブコマンドです: ${command}`);
     console.error('');
-    printHelp();
+    printHelp(process.stderr);
     process.exit(1);
 }
 
@@ -106,12 +106,14 @@ function getEnvExampleTemplate() {
 }
 
 function getConfigTemplate() {
-    return JSON.stringify(
-        {
-            contentRoot: 'posts',
-        },
-        null,
-        4,
+    return (
+        JSON.stringify(
+            {
+                contentRoot: 'posts',
+            },
+            null,
+            4,
+        ) + '\n'
     );
 }
 
@@ -126,8 +128,24 @@ function printVersion() {
     }
 }
 
-function printHelp() {
-    console.log(
-        `mdpub - Markdown to WordPress CLI\n\n使い方:\n  mdpub <subcommand> [options]\n\nサブコマンド:\n  init          .env.example / .mdpub-wpblocks.json の雛形を生成\n  convert       Markdown を Gutenberg ブロック HTML に変換\n  upload-media  記事画像を WordPress へアップロード\n  publish       記事を WordPress に draft 投稿\n  pipeline      convert → upload-media → publish を実行\n  sync          サーバ状態から .registry.yaml を再生成\n\nオプション:\n  -h, --help     ヘルプ表示\n  -v, --version  バージョン表示`,
-    );
+function printHelp(stream = process.stdout) {
+    const text = [
+        'mdpub - Markdown to WordPress CLI',
+        '',
+        '使い方:',
+        '  mdpub <subcommand> [options]',
+        '',
+        'サブコマンド:',
+        '  init          .env.example / .mdpub-wpblocks.json の雛形を生成',
+        '  convert       Markdown を Gutenberg ブロック HTML に変換',
+        '  upload-media  記事画像を WordPress へアップロード',
+        '  publish       記事を WordPress に draft 投稿',
+        '  pipeline      convert → upload-media → publish を実行',
+        '  sync          サーバ状態から .registry.yaml を再生成',
+        '',
+        'オプション:',
+        '  -h, --help     ヘルプ表示',
+        '  -v, --version  バージョン表示',
+    ].join('\n');
+    stream.write(text + '\n');
 }
