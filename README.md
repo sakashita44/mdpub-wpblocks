@@ -68,6 +68,31 @@ npm run publish -- my-first-post
 npm run pipeline -- my-first-post
 ```
 
+## ローカル CLI 利用（mdpub）
+
+`mdpub` コマンドとして使う場合:
+
+```bash
+npm link
+mdpub --help
+```
+
+初期設定ファイルの雛形を生成:
+
+```bash
+mdpub init
+```
+
+`.env.example` を参考に `.env` を作成してから実行:
+
+```bash
+mdpub convert my-first-post
+mdpub upload-media my-first-post
+mdpub publish my-first-post
+mdpub pipeline my-first-post
+mdpub sync
+```
+
 ## ワークフロー例（新規記事作成→画像配置→公開）
 
 1. `posts/<slug>/index.md` と `posts/<slug>/images/` を作成
@@ -84,6 +109,16 @@ npm run upload-media -- [--content-root <path>] <article-slug|path-to-article-di
 npm run publish -- [--content-root <path>] <article-slug|path-to-index-md>
 npm run pipeline -- [--content-root <path>] [--force-upload] <article-slug|path>
 npm run sync -- [--output <path>] [--content-root <path>]
+```
+
+`mdpub` でも同等に実行可能:
+
+```bash
+mdpub convert [--content-root <path>] <article-slug|path-to-md>
+mdpub upload-media [--content-root <path>] <article-slug|path-to-article-dir> [--force-upload]
+mdpub publish [--content-root <path>] <article-slug|path-to-index-md>
+mdpub pipeline [--content-root <path>] [--force-upload] <article-slug|path>
+mdpub sync [--output <path>] [--content-root <path>]
 ```
 
 ## 設定ファイルと環境変数
