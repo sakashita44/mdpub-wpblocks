@@ -1,0 +1,9 @@
+{
+    "core": "WordPress/WordPress#6.8",
+    "config": {
+        "WP_DEBUG": true,
+        "WP_DEBUG_LOG": true
+    },
+    "mappings": {},
+    "port": 8888
+}

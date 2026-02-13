@@ -68,6 +68,44 @@ npm run publish -- my-first-post
 npm run pipeline -- my-first-post
 ```
 
+## ローカル一時 WordPress 環境（リリース前テスト向け）
+
+本番サイトを汚さずに E2E 検証したい場合は、`@wordpress/env` で一時環境を起動できる。
+
+### 1) Docker を起動
+
+Docker Desktop（または互換環境）を起動しておく。
+
+### 2) 一時 WordPress を起動
+
+```bash
+npm run wp:start
+```
+
+- サイト: `http://localhost:8888`
+- 管理画面: `http://localhost:8888/wp-admin`
+- 既定の認証情報: `admin` / `password`
+
+### 3) `.env` を一時環境向けに設定
+
+```text
+WP_URL=http://localhost:8888
+WP_USER=admin
+WP_APP_PASSWORD=<Application Password>
+```
+
+Application Password は管理画面のユーザープロフィールで発行する。
+
+### 4) 停止 / 破棄
+
+```bash
+npm run wp:stop
+npm run wp:destroy
+```
+
+- `wp:stop`: コンテナ停止（データ保持）
+- `wp:destroy`: 環境削除（データ破棄）
+
 ## ローカル CLI 利用（mdpub）
 
 `mdpub` コマンドとして使う場合:
