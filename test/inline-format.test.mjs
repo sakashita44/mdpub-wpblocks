@@ -172,4 +172,15 @@ describe('renderInline', () => {
         const tokens = [textToken('price is \\$10')];
         expect(renderInline(tokens)).toBe('price is $10');
     });
+
+    it('html_inline をエスケープして保持する', () => {
+        const tokens = [
+            textToken('before '),
+            { type: 'html_inline', content: '<span class="x">ok</span>' },
+            textToken(' after'),
+        ];
+        expect(renderInline(tokens)).toBe(
+            'before &lt;span class=&quot;x&quot;&gt;ok&lt;/span&gt; after',
+        );
+    });
 });
