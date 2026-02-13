@@ -7,6 +7,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `@wordpress/env` を使ったローカル一時 WordPress テスト環境（`.wp-env.json`、`wp:start|wp:stop|wp:destroy`）
+
 ## [1.0.0] - 2026-02-14
 
 ### Added

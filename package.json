@@ -12,6 +12,9 @@
         "publish": "node scripts/publish.mjs",
         "pipeline": "node scripts/pipeline.mjs",
         "sync": "node scripts/sync.mjs",
+        "wp:start": "wp-env start",
+        "wp:stop": "wp-env stop",
+        "wp:destroy": "wp-env destroy",
         "init": "node bin/mdpub.mjs init",
         "prepare": "husky",
         "test": "vitest run",
@@ -35,6 +38,7 @@
         "yaml": "^2.8.2"
     },
     "devDependencies": {
+        "@wordpress/env": "^10.39.0",
         "@eslint/js": "^10.0.1",
         "eslint": "^10.0.0",
         "globals": "^17.3.0",

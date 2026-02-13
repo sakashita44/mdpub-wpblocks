@@ -7,3 +7,5 @@ posts/*
 *.log
 .claude/*.local.*
 .vscode/settings.json
+.wp-env/
+.wp-env.override.json
