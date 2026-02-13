@@ -13,12 +13,7 @@
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import {
-    extractOption,
-    resolveContentRoot,
-    resolveArticleDirPath,
-    resolveArticleMarkdownPath,
-} from '../lib/cli-config.mjs';
+import { extractOption, resolveContentRoot } from '../lib/cli-config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -39,28 +34,33 @@ if (!articleInput) {
     process.exit(1);
 }
 
-const { absPath: contentRootAbsPath } = resolveContentRoot({
+const { value: contentRoot } = resolveContentRoot({
     projectRoot,
     cliValue: cliContentRoot,
 });
-
-const absArticleDir = resolveArticleDirPath(articleInput, {
-    contentRootAbsPath,
-});
-const absMdPath = resolveArticleMarkdownPath(articleInput, {
-    contentRootAbsPath,
-});
+const commonArgs = ['--content-root', contentRoot];
+const uploadInput = articleInput.endsWith('.md')
+    ? dirname(articleInput)
+    : articleInput;
 
 try {
-    runStep('convert', ['scripts/convert.mjs', absMdPath], false);
+    runStep(
+        'convert',
+        ['scripts/convert.mjs', ...commonArgs, articleInput],
+        false,
+    );
 
-    const uploadArgs = ['scripts/upload-media.mjs', absArticleDir];
+    const uploadArgs = ['scripts/upload-media.mjs', ...commonArgs, uploadInput];
     if (forceUpload) {
         uploadArgs.push('--force-upload');
     }
     runStep('upload-media', uploadArgs, true);
 
-    runStep('publish', ['scripts/publish.mjs', absMdPath], true);
+    runStep(
+        'publish',
+        ['scripts/publish.mjs', ...commonArgs, articleInput],
+        true,
+    );
 
     console.log('\n✅ E2E 実行が完了しました');
     process.exit(0);

@@ -94,4 +94,34 @@ describe('cli-config', () => {
         expect(dir).toBe(resolve(contentRootAbsPath, 'article-a'));
         expect(md).toBe(resolve(contentRootAbsPath, 'article-a', 'index.md'));
     });
+
+    it('content root に空文字が指定されたらエラーにする', () => {
+        expect(() =>
+            resolveContentRoot({
+                projectRoot: workDir,
+                cliValue: '',
+            }),
+        ).toThrow('CLI 引数 --content-root が空です');
+
+        process.env.MDPUB_CONTENT_ROOT = '   ';
+        expect(() =>
+            resolveContentRoot({
+                projectRoot: workDir,
+                cliValue: undefined,
+            }),
+        ).toThrow('環境変数 MDPUB_CONTENT_ROOT が空です');
+
+        delete process.env.MDPUB_CONTENT_ROOT;
+        writeFileSync(
+            resolve(workDir, '.mdpub-wpblocks.json'),
+            JSON.stringify({ contentRoot: ' ' }),
+            'utf-8',
+        );
+        expect(() =>
+            resolveContentRoot({
+                projectRoot: workDir,
+                cliValue: undefined,
+            }),
+        ).toThrow('設定ファイル .mdpub-wpblocks.json が空です');
+    });
 });
