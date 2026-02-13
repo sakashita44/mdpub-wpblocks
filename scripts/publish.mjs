@@ -21,6 +21,11 @@ import {
     replaceLocalImagePaths,
     buildPostPayload,
 } from '../lib/publish-utils.mjs';
+import {
+    extractOption,
+    resolveContentRoot,
+    resolveArticleMarkdownPath,
+} from '../lib/cli-config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,13 +33,26 @@ const projectRoot = resolve(__dirname, '..');
 
 loadEnv(resolve(projectRoot, '.env'));
 
-const mdPath = process.argv[2];
-if (!mdPath) {
-    console.error('使い方: npm run publish -- <path-to-index-md>');
+const { value: cliContentRoot, rest } = extractOption(
+    process.argv.slice(2),
+    '--content-root',
+);
+const articleInput = rest[0];
+
+if (!articleInput) {
+    console.error(
+        '使い方: npm run publish -- [--content-root <path>] <article-slug|path-to-index-md>',
+    );
     process.exit(1);
 }
 
-const absMdPath = resolve(mdPath);
+const { absPath: contentRootAbsPath } = resolveContentRoot({
+    projectRoot,
+    cliValue: cliContentRoot,
+});
+const absMdPath = resolveArticleMarkdownPath(articleInput, {
+    contentRootAbsPath,
+});
 if (!existsSync(absMdPath)) {
     console.error(`エラー: ファイルが見つかりません: ${absMdPath}`);
     process.exit(1);

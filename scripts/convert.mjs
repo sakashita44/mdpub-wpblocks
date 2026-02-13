@@ -6,15 +6,40 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { serialize } from '../lib/wp-env.mjs';
 import { parseMd } from '../lib/md-parser.mjs';
 import { transformTokens } from '../lib/block-transforms/index.mjs';
+import {
+    extractOption,
+    resolveContentRoot,
+    resolveArticleMarkdownPath,
+} from '../lib/cli-config.mjs';
 
-const mdPath = process.argv[2];
-if (!mdPath) {
-    console.error('使い方: npm run convert -- <path-to-md>');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = resolve(__dirname, '..');
+
+const { value: cliContentRoot, rest } = extractOption(
+    process.argv.slice(2),
+    '--content-root',
+);
+const articleInput = rest[0];
+
+if (!articleInput) {
+    console.error(
+        '使い方: npm run convert -- [--content-root <path>] <article-slug|path-to-md>',
+    );
     process.exit(1);
 }
+
+const { absPath: contentRootAbsPath } = resolveContentRoot({
+    projectRoot,
+    cliValue: cliContentRoot,
+});
+
+const mdPath = resolveArticleMarkdownPath(articleInput, { contentRootAbsPath });
 
 if (!existsSync(mdPath)) {
     console.error(`エラー: ファイルが見つかりません: ${mdPath}`);

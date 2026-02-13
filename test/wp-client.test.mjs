@@ -84,6 +84,17 @@ describe('createWpClient', () => {
                 'WP API エラー: 401',
             );
         });
+
+        it('ネットワークエラー時に URL 付きで例外を投げる', async () => {
+            globalThis.fetch = vi
+                .fn()
+                .mockRejectedValue(new Error('connect ECONNREFUSED'));
+
+            const wp = createWpClient(testConfig);
+            await expect(wp.findMediaBySlug('article-a-photo')).rejects.toThrow(
+                'ネットワークエラー:',
+            );
+        });
     });
 
     describe('findPostBySlug', () => {
@@ -207,6 +218,40 @@ describe('createWpClient', () => {
                     }),
                     body: JSON.stringify(payload),
                 }),
+            );
+        });
+    });
+
+    describe('listPosts / listMedia', () => {
+        it('ページ指定で投稿一覧を取得できる', async () => {
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve([{ id: 1, slug: 'a' }]),
+            });
+
+            const wp = createWpClient(testConfig);
+            const result = await wp.listPosts(2, 50);
+
+            expect(result).toEqual([{ id: 1, slug: 'a' }]);
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/wp/v2/posts?page=2&per_page=50',
+                expect.anything(),
+            );
+        });
+
+        it('ページ指定でメディア一覧を取得できる', async () => {
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve([{ id: 9, slug: 'img' }]),
+            });
+
+            const wp = createWpClient(testConfig);
+            const result = await wp.listMedia(3, 20);
+
+            expect(result).toEqual([{ id: 9, slug: 'img' }]);
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/wp/v2/media?page=3&per_page=20',
+                expect.anything(),
             );
         });
     });

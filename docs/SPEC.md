@@ -242,6 +242,32 @@ https://www.youtube.com/watch?v=xxxxx
 1. `GET /wp/v2/media?slug=<slug>` でメディア URL を取得
 1. ブロック HTML 内のローカルパスを取得した URL に置換
 
+## E2E 統合・CLI 仕上げ（Issue #8）
+
+### 統合実行モード
+
+`pipeline` コマンドで以下を順次実行する。
+
+1. `convert`（Markdown → ブロック変換確認）
+1. `upload-media`（画像アップロード）
+1. `publish`（draft 投稿）
+
+### レジストリ再生成
+
+`sync` コマンドはサーバ状態から `.registry.yaml` を再生成する。
+
+- 取得対象: 投稿一覧、メディア一覧
+- ローカルキャッシュとしての運用はしない（可視化・監査用途）
+
+### content root 設定
+
+`posts/` の配置場所は以下の優先順位で解決する。
+
+1. CLI 引数 `--content-root`
+1. 環境変数 `MDPUB_CONTENT_ROOT`
+1. 設定ファイル `.mdpub-wpblocks.json` の `contentRoot`
+1. デフォルト `posts`
+
 ## ステートレス設計
 
 ローカルに状態ファイルを持たず、毎回サーバに問い合わせる。

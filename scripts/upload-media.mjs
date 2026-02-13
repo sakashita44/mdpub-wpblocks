@@ -18,6 +18,11 @@ import {
     resolveImagePath,
 } from '../lib/media-slug.mjs';
 import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.mjs';
+import {
+    extractOption,
+    resolveContentRoot,
+    resolveArticleDirPath,
+} from '../lib/cli-config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,16 +34,26 @@ loadEnv(resolve(projectRoot, '.env'));
 // --- 引数パース ---
 const args = process.argv.slice(2);
 const forceUpload = args.includes('--force-upload');
-const articleDir = args.find((a) => !a.startsWith('--'));
+const { value: cliContentRoot, rest: withoutRoot } = extractOption(
+    args.filter((a) => a !== '--force-upload'),
+    '--content-root',
+);
+const articleInput = withoutRoot[0];
 
-if (!articleDir) {
+if (!articleInput) {
     console.error(
-        '使い方: npm run upload-media -- <path-to-article-dir> [--force-upload]',
+        '使い方: npm run upload-media -- [--content-root <path>] <article-slug|path-to-article-dir> [--force-upload]',
     );
     process.exit(1);
 }
 
-const absArticleDir = resolve(articleDir);
+const { absPath: contentRootAbsPath } = resolveContentRoot({
+    projectRoot,
+    cliValue: cliContentRoot,
+});
+const absArticleDir = resolveArticleDirPath(articleInput, {
+    contentRootAbsPath,
+});
 const indexMd = join(absArticleDir, 'index.md');
 
 if (!existsSync(indexMd)) {
