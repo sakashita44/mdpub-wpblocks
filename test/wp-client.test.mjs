@@ -386,6 +386,78 @@ describe('createWpClient', () => {
                 expect.anything(),
             );
         });
+
+        it('/wp-json が 404 の場合 rest_route へフォールバックする', async () => {
+            globalThis.fetch = vi
+                .fn()
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 404,
+                    statusText: 'Not Found',
+                    headers: {
+                        get: () => 'text/html',
+                    },
+                    text: () => Promise.resolve('not found'),
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    headers: {
+                        get: () => null,
+                    },
+                    json: () => Promise.resolve([]),
+                });
+
+            const wp = createWpClient(testConfig);
+            const result = await wp.findMediaBySlug('test');
+
+            expect(result).toBeNull();
+            expect(globalThis.fetch).toHaveBeenNthCalledWith(
+                1,
+                'https://example.com/wp-json/wp/v2/media?slug=test&per_page=1',
+                expect.anything(),
+            );
+            expect(globalThis.fetch).toHaveBeenNthCalledWith(
+                2,
+                'https://example.com/?slug=test&per_page=1&rest_route=%2Fwp%2Fv2%2Fmedia',
+                expect.anything(),
+            );
+        });
+
+        it('フォールバック後は以降のリクエストも rest_route を使う', async () => {
+            // 1回目: primary 404 → fallback OK
+            globalThis.fetch = vi
+                .fn()
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 404,
+                    statusText: 'Not Found',
+                    headers: { get: () => 'text/html' },
+                    text: () => Promise.resolve('not found'),
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    headers: { get: () => null },
+                    json: () => Promise.resolve([]),
+                })
+                // 2回目: 直接 fallback
+                .mockResolvedValueOnce({
+                    ok: true,
+                    headers: { get: () => null },
+                    json: () => Promise.resolve([{ id: 1, slug: 'x' }]),
+                });
+
+            const wp = createWpClient(testConfig);
+            await wp.findMediaBySlug('test');
+            const result = await wp.findMediaBySlug('x');
+
+            expect(result).toEqual({ id: 1, slug: 'x' });
+            // 2回目は primary を試さず直接 fallback URL
+            expect(globalThis.fetch).toHaveBeenNthCalledWith(
+                3,
+                expect.stringContaining('?slug=x'),
+                expect.anything(),
+            );
+        });
     });
 });
 

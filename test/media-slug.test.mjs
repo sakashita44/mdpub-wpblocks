@@ -12,7 +12,7 @@ import {
 } from '../lib/media-slug.mjs';
 
 describe('uploadFilename', () => {
-    it('記事固有画像: <article-slug>-<filename>', () => {
+    it('記事固有画像: <article-slug>-<filename>（サニタイズ済み）', () => {
         expect(uploadFilename('images/photo.jpg', 'article-a')).toBe(
             'article-a-photo.jpg',
         );
@@ -41,6 +41,18 @@ describe('uploadFilename', () => {
             'shared-logo.png',
         );
     });
+
+    it('スペース・括弧入りファイル名をサニタイズ', () => {
+        expect(uploadFilename('images/Test Image (1).png', 'article-a')).toBe(
+            'article-a-test-image-1.png',
+        );
+    });
+
+    it('大文字ファイル名を小文字化', () => {
+        expect(uploadFilename('images/UPPER_CASE.PNG', 'my-post')).toBe(
+            'my-post-upper_case.png',
+        );
+    });
 });
 
 describe('expectedSlug', () => {
@@ -62,9 +74,9 @@ describe('expectedSlug', () => {
         );
     });
 
-    it('記号をハイフンに変換し連続ハイフンを圧縮', () => {
+    it('記号をハイフンに変換し連続ハイフンを圧縮（アンダースコアは保持）', () => {
         expect(expectedSlug('images/my_photo (1).jpg', 'article-a')).toBe(
-            'article-a-my-photo-1',
+            'article-a-my_photo-1',
         );
     });
 
@@ -114,5 +126,26 @@ describe('extractImagePaths', () => {
     it('インラインリンクは含まない', () => {
         const body = '[click](https://example.com)';
         expect(extractImagePaths(body)).toEqual([]);
+    });
+
+    it('angle-bracket 記法でスペース入りパスを抽出', () => {
+        const body = '![a](<images/Test Image (1).png>)';
+        expect(extractImagePaths(body)).toEqual(['images/Test Image (1).png']);
+    });
+
+    it('URL エンコードされたパスをデコードして抽出', () => {
+        const body = '![a](images/Test%20Image%20%281%29.png)';
+        expect(extractImagePaths(body)).toEqual(['images/Test Image (1).png']);
+    });
+
+    it('angle-bracket 記法と通常記法が混在', () => {
+        const body = [
+            '![a](<images/space file.png>)',
+            '![b](images/normal.jpg)',
+        ].join('\n');
+        expect(extractImagePaths(body)).toEqual([
+            'images/space file.png',
+            'images/normal.jpg',
+        ]);
     });
 });
