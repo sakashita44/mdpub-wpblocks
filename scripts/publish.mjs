@@ -51,12 +51,12 @@ try {
 const markdownString = readFileSync(absMdPath, 'utf-8');
 const { data: frontmatter, content: body } = matter(markdownString);
 
-validateFrontmatter(frontmatter);
-
-const articleSlug = frontmatter.slug;
-const wp = createWpClient(config);
-
 try {
+    validateFrontmatter(frontmatter);
+
+    const articleSlug = frontmatter.slug;
+    const wp = createWpClient(config);
+
     const { tokens } = parseMd(body);
     const blocks = transformTokens(tokens);
     const rawHtml = serialize(blocks);
@@ -64,17 +64,17 @@ try {
     const resolvedImageMap = await resolveImageUrlMap(wp, body, articleSlug);
     const contentHtml = replaceLocalImagePaths(rawHtml, resolvedImageMap);
 
-    const categories = await resolveCategoryIds(wp, frontmatter.categories);
-    const tags = await resolveTagIds(wp, frontmatter.tags || []);
-    let featuredMediaId;
-
-    if (frontmatter.featured_image) {
-        featuredMediaId = await resolveFeaturedMediaId(
-            wp,
-            frontmatter.featured_image,
-            articleSlug,
-        );
-    }
+    const [categories, tags, featuredMediaId] = await Promise.all([
+        resolveCategoryIds(wp, frontmatter.categories),
+        resolveTagIds(wp, frontmatter.tags || []),
+        frontmatter.featured_image
+            ? resolveFeaturedMediaId(
+                  wp,
+                  frontmatter.featured_image,
+                  articleSlug,
+              )
+            : Promise.resolve(undefined),
+    ]);
 
     const payload = buildPostPayload(frontmatter, {
         categories,
@@ -103,27 +103,33 @@ try {
 }
 
 async function resolveCategoryIds(wp, categorySlugs) {
-    const ids = [];
-    for (const slug of categorySlugs) {
-        const category = await wp.findCategoryBySlug(slug);
+    const categories = await Promise.all(
+        categorySlugs.map((slug) => wp.findCategoryBySlug(slug)),
+    );
+
+    categories.forEach((category, index) => {
         if (!category) {
-            throw new Error(`カテゴリが見つかりません: ${slug}`);
+            throw new Error(
+                `カテゴリが見つかりません: ${categorySlugs[index]}`,
+            );
         }
-        ids.push(category.id);
-    }
-    return ids;
+    });
+
+    return categories.map((category) => category.id);
 }
 
 async function resolveTagIds(wp, tagSlugs) {
-    const ids = [];
-    for (const slug of tagSlugs) {
-        const tag = await wp.findTagBySlug(slug);
+    const tags = await Promise.all(
+        tagSlugs.map((slug) => wp.findTagBySlug(slug)),
+    );
+
+    tags.forEach((tag, index) => {
         if (!tag) {
-            throw new Error(`タグが見つかりません: ${slug}`);
+            throw new Error(`タグが見つかりません: ${tagSlugs[index]}`);
         }
-        ids.push(tag.id);
-    }
-    return ids;
+    });
+
+    return tags.map((tag) => tag.id);
 }
 
 async function resolveFeaturedMediaId(wp, featuredImagePath, articleSlug) {

@@ -200,7 +200,7 @@ describe('createWpClient', () => {
             expect(globalThis.fetch).toHaveBeenCalledWith(
                 'https://example.com/wp-json/wp/v2/posts/100',
                 expect.objectContaining({
-                    method: 'PUT',
+                    method: 'POST',
                     headers: expect.objectContaining({
                         Authorization: expectedAuth,
                         'Content-Type': 'application/json',

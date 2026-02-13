@@ -68,6 +68,26 @@ describe('replaceLocalImagePaths', () => {
         expect(replaced).not.toContain('images/photo.jpg');
         expect(replaced).not.toContain('../shared/logo.png');
     });
+
+    it('src/href 以外の文字列は置換しない', () => {
+        const html =
+            '<p>images/photo.jpg</p>' +
+            '<img src="images/photo.jpg" alt="images/photo.jpg" />';
+
+        const map = new Map([
+            [
+                'images/photo.jpg',
+                'https://example.com/uploads/article-a-photo.jpg',
+            ],
+        ]);
+
+        const replaced = replaceLocalImagePaths(html, map);
+
+        expect(replaced).toContain('<p>images/photo.jpg</p>');
+        expect(replaced).toContain(
+            '<img src="https://example.com/uploads/article-a-photo.jpg" alt="images/photo.jpg" />',
+        );
+    });
 });
 
 describe('buildPostPayload', () => {
