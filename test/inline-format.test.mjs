@@ -162,4 +162,37 @@ describe('renderInline', () => {
             'Hello <strong>bold</strong> and <em>italic</em>',
         );
     });
+
+    it('インライン数式を KaTeX ショートコードに変換', () => {
+        const tokens = [textToken('before $x^2$ after')];
+        expect(renderInline(tokens)).toBe('before [katex]x^2[/katex] after');
+    });
+
+    it('1段落に複数のインライン数式を変換', () => {
+        const tokens = [textToken('$a$ and $b$')];
+        expect(renderInline(tokens)).toBe(
+            '[katex]a[/katex] and [katex]b[/katex]',
+        );
+    });
+
+    it('エスケープされた $ は通常文字として扱う', () => {
+        const tokens = [textToken('price is \\$10')];
+        expect(renderInline(tokens)).toBe('price is $10');
+    });
+
+    it('display math 形式の $$...$$ はインライン数式として変換しない', () => {
+        const tokens = [textToken('see $$x^2$$ end')];
+        expect(renderInline(tokens)).toBe('see $$x^2$$ end');
+    });
+
+    it('html_inline をパススルーして保持する', () => {
+        const tokens = [
+            textToken('before '),
+            { type: 'html_inline', content: '<span class="x">ok</span>' },
+            textToken(' after'),
+        ];
+        expect(renderInline(tokens)).toBe(
+            'before <span class="x">ok</span> after',
+        );
+    });
 });
