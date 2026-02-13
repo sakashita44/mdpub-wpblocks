@@ -6,7 +6,14 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createWpClient, getWpConfig } from '../lib/wp-client.mjs';
+import { readFileSync } from 'node:fs';
+import { createWpClient, getWpConfig, loadEnv } from '../lib/wp-client.mjs';
+
+// node:fs の readFileSync をモック可能にする（デフォルトは実装に委譲）
+vi.mock('node:fs', async (importOriginal) => {
+    const mod = await importOriginal();
+    return { ...mod, readFileSync: vi.fn(mod.readFileSync) };
+});
 
 // テスト用設定
 const testConfig = {
@@ -87,11 +94,36 @@ describe('createWpClient', () => {
                 json: () => Promise.resolve(uploaded),
             });
 
+            // readFileSync をスタブ化
+            vi.mocked(readFileSync).mockReturnValueOnce(
+                Buffer.from('fake-image'),
+            );
+
             const wp = createWpClient(testConfig);
-            // テスト用にファイル読み込みをスキップするため直接テストはしない
-            // uploadMedia は readFileSync を呼ぶので統合テスト向き
-            // ここでは fetch が正しいパラメータで呼ばれることの構造テスト
-            expect(typeof wp.uploadMedia).toBe('function');
+            const result = await wp.uploadMedia(
+                '/fake/path/photo.jpg',
+                'article-a-photo.jpg',
+            );
+
+            expect(result).toEqual(uploaded);
+            expect(readFileSync).toHaveBeenCalledWith('/fake/path/photo.jpg');
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/wp/v2/media',
+                expect.objectContaining({
+                    method: 'POST',
+                    headers: expect.objectContaining({
+                        Authorization: expectedAuth,
+                        'Content-Type': 'image/jpeg',
+                    }),
+                    body: expect.any(Buffer),
+                }),
+            );
+
+            // Content-Disposition ヘッダーの検証
+            const callArgs = globalThis.fetch.mock.calls[0][1];
+            expect(callArgs.headers['Content-Disposition']).toContain(
+                'article-a-photo.jpg',
+            );
         });
     });
 
@@ -169,5 +201,62 @@ describe('getWpConfig', () => {
         delete process.env.WP_APP_PASSWORD;
 
         expect(() => getWpConfig()).toThrow('環境変数が未設定です');
+    });
+});
+
+describe('loadEnv', () => {
+    let originalEnv;
+
+    beforeEach(() => {
+        originalEnv = { ...process.env };
+    });
+
+    afterEach(() => {
+        process.env = originalEnv;
+        vi.mocked(readFileSync).mockReset();
+    });
+
+    it('ダブルクォートで囲まれた値のクォートを除去する', () => {
+        vi.mocked(readFileSync).mockReturnValueOnce('TEST_DQ="hello world"');
+        delete process.env.TEST_DQ;
+
+        loadEnv('/fake/.env');
+
+        expect(process.env.TEST_DQ).toBe('hello world');
+    });
+
+    it('シングルクォートで囲まれた値のクォートを除去する', () => {
+        vi.mocked(readFileSync).mockReturnValueOnce("TEST_SQ='hello world'");
+        delete process.env.TEST_SQ;
+
+        loadEnv('/fake/.env');
+
+        expect(process.env.TEST_SQ).toBe('hello world');
+    });
+
+    it('クォートなしの値はそのまま読み込む', () => {
+        vi.mocked(readFileSync).mockReturnValueOnce('TEST_NQ=plain-value');
+        delete process.env.TEST_NQ;
+
+        loadEnv('/fake/.env');
+
+        expect(process.env.TEST_NQ).toBe('plain-value');
+    });
+
+    it('既存の環境変数は上書きしない', () => {
+        vi.mocked(readFileSync).mockReturnValueOnce('TEST_EXIST=new');
+        process.env.TEST_EXIST = 'old';
+
+        loadEnv('/fake/.env');
+
+        expect(process.env.TEST_EXIST).toBe('old');
+    });
+
+    it('.env が存在しない場合は何もしない', () => {
+        vi.mocked(readFileSync).mockImplementationOnce(() => {
+            throw new Error('ENOENT');
+        });
+
+        expect(() => loadEnv('/nonexistent/.env')).not.toThrow();
     });
 });
