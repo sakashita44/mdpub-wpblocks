@@ -1,15 +1,14 @@
 /**
  * CLI: メディアアップロード
  *
- * 使い方: node scripts/upload-media.mjs <path-to-article-dir> [--force-upload]
+ * 使い方: node scripts/upload-media.mjs [--content-root <path>] <article-slug|path-to-article-dir> [--force-upload]
  *
  * 記事ディレクトリ内の画像および共有リソースを WordPress にアップロードする。
  * ステートレス設計: slug でサーバに問い合わせ、既存ならスキップ。
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve, join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve, join } from 'node:path';
 import matter from 'gray-matter';
 import {
     uploadFilename,
@@ -23,10 +22,9 @@ import {
     resolveContentRoot,
     resolveArticleDirPath,
 } from '../lib/cli-config.mjs';
+import { resolveProjectRoot } from '../lib/project-root.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = resolve(__dirname, '..');
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 // .env 読み込み
 loadEnv(resolve(projectRoot, '.env'));
@@ -34,10 +32,17 @@ loadEnv(resolve(projectRoot, '.env'));
 // --- 引数パース ---
 const args = process.argv.slice(2);
 const forceUpload = args.includes('--force-upload');
-const { value: cliContentRoot, rest: withoutRoot } = extractOption(
-    args.filter((a) => a !== '--force-upload'),
-    '--content-root',
-);
+let cliContentRoot;
+let withoutRoot;
+try {
+    ({ value: cliContentRoot, rest: withoutRoot } = extractOption(
+        args.filter((a) => a !== '--force-upload'),
+        '--content-root',
+    ));
+} catch (e) {
+    console.error(`引数エラー: ${e.message}`);
+    process.exit(1);
+}
 const articleInput = withoutRoot[0];
 
 if (!articleInput) {

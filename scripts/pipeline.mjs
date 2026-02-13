@@ -10,21 +10,30 @@
  *   3) publish（投稿）
  */
 
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { extractOption, resolveContentRoot } from '../lib/cli-config.mjs';
+import {
+    extractOption,
+    resolveContentRoot,
+    resolveArticleMarkdownPath,
+} from '../lib/cli-config.mjs';
+import { resolveProjectRoot } from '../lib/project-root.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = resolve(__dirname, '..');
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 const args = process.argv.slice(2);
 const forceUpload = args.includes('--force-upload');
-const { value: cliContentRoot, rest } = extractOption(
-    args.filter((a) => a !== '--force-upload'),
-    '--content-root',
-);
+let cliContentRoot;
+let rest;
+try {
+    ({ value: cliContentRoot, rest } = extractOption(
+        args.filter((a) => a !== '--force-upload'),
+        '--content-root',
+    ));
+} catch (e) {
+    console.error(`引数エラー: ${e.message}`);
+    process.exit(1);
+}
 const articleInput = rest[0];
 
 if (!articleInput) {
@@ -34,19 +43,22 @@ if (!articleInput) {
     process.exit(1);
 }
 
-const { value: contentRoot } = resolveContentRoot({
+const { value: contentRoot, absPath: contentRootAbsPath } = resolveContentRoot({
     projectRoot,
     cliValue: cliContentRoot,
 });
 const commonArgs = ['--content-root', contentRoot];
+const markdownInput = articleInput.endsWith('.md')
+    ? resolveArticleMarkdownPath(articleInput, { contentRootAbsPath })
+    : articleInput;
 const uploadInput = articleInput.endsWith('.md')
-    ? dirname(articleInput)
+    ? dirname(markdownInput)
     : articleInput;
 
 try {
     runStep(
         'convert',
-        ['scripts/convert.mjs', ...commonArgs, articleInput],
+        ['scripts/convert.mjs', ...commonArgs, markdownInput],
         false,
     );
 
@@ -58,7 +70,7 @@ try {
 
     runStep(
         'publish',
-        ['scripts/publish.mjs', ...commonArgs, articleInput],
+        ['scripts/publish.mjs', ...commonArgs, markdownInput],
         true,
     );
 
@@ -73,6 +85,7 @@ function runStep(label, scriptArgs, inheritOutput) {
     console.log(`\n▶ ${label} 実行中...`);
     const result = spawnSync(process.execPath, scriptArgs, {
         cwd: projectRoot,
+        // convert 成功時はブロックHTMLが大量出力されるため抑制し、失敗時のみ表示する。
         stdio: inheritOutput ? 'inherit' : ['ignore', 'pipe', 'pipe'],
         env: process.env,
         encoding: 'utf-8',

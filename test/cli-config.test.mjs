@@ -1,10 +1,4 @@
-import {
-    mkdtempSync,
-    rmSync,
-    writeFileSync,
-    mkdirSync,
-    existsSync,
-} from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -26,7 +20,7 @@ describe('cli-config', () => {
 
     afterEach(() => {
         process.env = originalEnv;
-        if (workDir && existsSync(workDir)) {
+        if (workDir) {
             rmSync(workDir, { recursive: true, force: true });
         }
     });
@@ -45,6 +39,19 @@ describe('cli-config', () => {
         );
         expect(two.value).toBe('posts2');
         expect(two.rest).toEqual(['article-b']);
+    });
+
+    it('extractOption は値欠落時にエラーを投げる', () => {
+        expect(() =>
+            extractOption(['--content-root'], '--content-root'),
+        ).toThrow('--content-root に値が指定されていません');
+
+        expect(() =>
+            extractOption(
+                ['--content-root', '--force-upload', 'article-a'],
+                '--content-root',
+            ),
+        ).toThrow('--content-root に値が指定されていません');
     });
 
     it('content root 優先順位は CLI > ENV > 設定ファイル > デフォルト', () => {
@@ -93,6 +100,15 @@ describe('cli-config', () => {
 
         expect(dir).toBe(resolve(contentRootAbsPath, 'article-a'));
         expect(md).toBe(resolve(contentRootAbsPath, 'article-a', 'index.md'));
+    });
+
+    it('ディレクトリパス入力から MD パスを解決できる', () => {
+        const contentRootAbsPath = resolve(workDir, 'posts');
+        const md = resolveArticleMarkdownPath('./posts/article-b', {
+            contentRootAbsPath,
+        });
+
+        expect(md).toBe(resolve('./posts/article-b', 'index.md'));
     });
 
     it('content root に空文字が指定されたらエラーにする', () => {
