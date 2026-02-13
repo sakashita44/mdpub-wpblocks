@@ -11,7 +11,8 @@
 └── #6 メディアアップロード ─┘──→ #8 E2E 統合 ✅
 
 #17 docs: ドキュメント整備 ✅
-└──→ v1.0.0 リリース準備
+└──→ #19 CLI bin化と init 導入 ✅
+  └──→ v1.0.0 リリース準備
 ```
 
 | Issue | タイトル                            | 状態    | blocked by     | ブランチ                                             |
@@ -24,6 +25,7 @@
 | #7    | 記事投稿 (publish)                  | ✅ done | #3, #6         | feature/202602/sakashita44/7-article-publish         |
 | #8    | E2E 統合・CLI 仕上げ                | ✅ done | #4, #5, #6, #7 | feature/202602/sakashita44/8-e2e-cli-finish          |
 | #17   | docs: ドキュメント整備              | ✅ done | #8             | issue17-docs                                         |
+| #19   | feat: CLI bin化と init 導入         | ✅ done | #17            | feature/202602/sakashita44/19-cli-bin-init           |
 
 ## 着手可能な Issue
 
@@ -34,14 +36,9 @@
 ### v1.0.0 まで（安定版リリース）
 
 - [x] #17 ドキュメント整備完了
-    - [x] `README.md` の Quick Start / ワークフロー例 / トラブルシューティング拡充
-    - [x] `docs/SPEC.md` と実装の差分解消
-    - [x] `.mdpub-wpblocks.json` と環境変数優先順位の明文化
-    - [x] `posts/sample-article/` の解説追記
-    - [x] アーキテクチャ図（Mermaid）追加
-- [ ] `npm run lint` / `npm test` を main でグリーン維持
+- [x] #19 CLI bin化と init 導入
+- [ ] `npm run fix` / `npm test` を main でグリーン維持
 - [ ] `v1.0.0` タグ付け・リリースノート整備
-- [ ] #19 feat: CLI bin化と init 導入（小さめ機能追加）
 
 ### v1.0.1 以降
 

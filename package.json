@@ -3,16 +3,21 @@
     "version": "0.1.0",
     "description": "Markdown を Gutenberg ブロックに変換し WordPress REST API 経由で投稿するツール",
     "type": "module",
+    "bin": {
+        "mdpub": "./bin/mdpub.mjs"
+    },
     "scripts": {
         "convert": "node scripts/convert.mjs",
         "upload-media": "node scripts/upload-media.mjs",
         "publish": "node scripts/publish.mjs",
         "pipeline": "node scripts/pipeline.mjs",
         "sync": "node scripts/sync.mjs",
+        "init": "node bin/mdpub.mjs init",
         "prepare": "husky",
         "test": "vitest run",
-        "lint": "eslint \"lib/**/*.mjs\" \"scripts/**/*.mjs\" \"test/**/*.mjs\" && markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
-        "format": "prettier --write \"**/*.{mjs,json,md}\" && eslint --fix \"lib/**/*.mjs\" \"scripts/**/*.mjs\" \"test/**/*.mjs\""
+        "lint": "eslint \"lib/**/*.mjs\" \"scripts/**/*.mjs\" \"test/**/*.mjs\" \"bin/**/*.mjs\" && markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+        "format": "prettier --write \"**/*.{mjs,json,md}\" && eslint --fix \"lib/**/*.mjs\" \"scripts/**/*.mjs\" \"test/**/*.mjs\" \"bin/**/*.mjs\"",
+        "fix": "npm run format && npm run lint"
     },
     "author": "sakashita44",
     "license": "MIT",
