@@ -4,3 +4,4 @@ posts/
 .env
 *.log
 .claude/*.local.*
+.vscode/settings.json
