@@ -1,15 +1,14 @@
 /**
  * CLI: 記事投稿（Issue #7）
  *
- * 使い方: node scripts/publish.mjs <path-to-index-md>
+ * 使い方: node scripts/publish.mjs [--content-root <path>] <article-slug|path-to-index-md>
  *
  * Frontmatter と Markdown 本文から Gutenberg ブロック HTML を生成し、
  * WordPress REST API に draft 投稿する。
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import matter from 'gray-matter';
 import { parseMd } from '../lib/md-parser.mjs';
 import { transformTokens } from '../lib/block-transforms/index.mjs';
@@ -21,20 +20,44 @@ import {
     replaceLocalImagePaths,
     buildPostPayload,
 } from '../lib/publish-utils.mjs';
+import {
+    extractOption,
+    resolveContentRoot,
+    resolveArticleMarkdownPath,
+} from '../lib/cli-config.mjs';
+import { resolveProjectRoot } from '../lib/project-root.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = resolve(__dirname, '..');
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 loadEnv(resolve(projectRoot, '.env'));
 
-const mdPath = process.argv[2];
-if (!mdPath) {
-    console.error('使い方: npm run publish -- <path-to-index-md>');
+let cliContentRoot;
+let rest;
+try {
+    ({ value: cliContentRoot, rest } = extractOption(
+        process.argv.slice(2),
+        '--content-root',
+    ));
+} catch (e) {
+    console.error(`引数エラー: ${e.message}`);
+    process.exit(1);
+}
+const articleInput = rest[0];
+
+if (!articleInput) {
+    console.error(
+        '使い方: npm run publish -- [--content-root <path>] <article-slug|path-to-index-md>',
+    );
     process.exit(1);
 }
 
-const absMdPath = resolve(mdPath);
+const { absPath: contentRootAbsPath } = resolveContentRoot({
+    projectRoot,
+    cliValue: cliContentRoot,
+});
+const absMdPath = resolveArticleMarkdownPath(articleInput, {
+    contentRootAbsPath,
+});
 if (!existsSync(absMdPath)) {
     console.error(`エラー: ファイルが見つかりません: ${absMdPath}`);
     process.exit(1);

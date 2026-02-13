@@ -1,15 +1,14 @@
 /**
  * CLI: メディアアップロード
  *
- * 使い方: node scripts/upload-media.mjs <path-to-article-dir> [--force-upload]
+ * 使い方: node scripts/upload-media.mjs [--content-root <path>] <article-slug|path-to-article-dir> [--force-upload]
  *
  * 記事ディレクトリ内の画像および共有リソースを WordPress にアップロードする。
  * ステートレス設計: slug でサーバに問い合わせ、既存ならスキップ。
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { resolve, join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve, join } from 'node:path';
 import matter from 'gray-matter';
 import {
     uploadFilename,
@@ -18,27 +17,52 @@ import {
     resolveImagePath,
 } from '../lib/media-slug.mjs';
 import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.mjs';
+import {
+    extractFlag,
+    extractOption,
+    resolveContentRoot,
+    resolveArticleDirPath,
+} from '../lib/cli-config.mjs';
+import { resolveProjectRoot } from '../lib/project-root.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = resolve(__dirname, '..');
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 // .env 読み込み
 loadEnv(resolve(projectRoot, '.env'));
 
 // --- 引数パース ---
 const args = process.argv.slice(2);
-const forceUpload = args.includes('--force-upload');
-const articleDir = args.find((a) => !a.startsWith('--'));
+const { enabled: forceUpload, rest: argsWithoutForceUpload } = extractFlag(
+    args,
+    '--force-upload',
+);
+let cliContentRoot;
+let withoutRoot;
+try {
+    ({ value: cliContentRoot, rest: withoutRoot } = extractOption(
+        argsWithoutForceUpload,
+        '--content-root',
+    ));
+} catch (e) {
+    console.error(`引数エラー: ${e.message}`);
+    process.exit(1);
+}
+const articleInput = withoutRoot[0];
 
-if (!articleDir) {
+if (!articleInput) {
     console.error(
-        '使い方: npm run upload-media -- <path-to-article-dir> [--force-upload]',
+        '使い方: npm run upload-media -- [--content-root <path>] <article-slug|path-to-article-dir> [--force-upload]',
     );
     process.exit(1);
 }
 
-const absArticleDir = resolve(articleDir);
+const { absPath: contentRootAbsPath } = resolveContentRoot({
+    projectRoot,
+    cliValue: cliContentRoot,
+});
+const absArticleDir = resolveArticleDirPath(articleInput, {
+    contentRootAbsPath,
+});
 const indexMd = join(absArticleDir, 'index.md');
 
 if (!existsSync(indexMd)) {

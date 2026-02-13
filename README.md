@@ -82,6 +82,33 @@ npm run upload-media -- posts/my-article/
 npm run publish -- posts/my-article.md
 ```
 
+### E2E 統合実行
+
+```bash
+npm run pipeline -- sample-article
+```
+
+### レジストリ再生成
+
+```bash
+npm run sync
+```
+
+## コンテンツルート設定
+
+`posts/` の配置場所（content root）は以下の優先順位で解決する。
+
+1. CLI 引数 `--content-root`
+1. 環境変数 `MDPUB_CONTENT_ROOT`
+1. 設定ファイル `.mdpub-wpblocks.json` の `contentRoot`
+1. デフォルト `posts`
+
+```json
+{
+    "contentRoot": "posts"
+}
+```
+
 ## Markdown ファイル形式
 
 記事は `posts/<slug>/index.md` に配置する。
@@ -118,7 +145,9 @@ mdpub-wpblocks/
 ├─ scripts/
 │   ├─ convert.mjs             ← CLI: MD → ブロック HTML
 │   ├─ upload-media.mjs        ← CLI: 画像アップロード
-│   └─ publish.mjs             ← CLI: 記事投稿
+│   ├─ publish.mjs             ← CLI: 記事投稿
+│   ├─ pipeline.mjs            ← CLI: 統合実行（変換→アップロード→投稿）
+│   └─ sync.mjs                ← CLI: .registry.yaml 再生成
 ├─ posts/                      ← 記事ファイル (.gitignore)
 └─ docs/
     ├─ SPEC.md                 ← 技術仕様書
