@@ -268,6 +268,73 @@ https://www.youtube.com/watch?v=xxxxx
 1. 設定ファイル `.mdpub-wpblocks.json` の `contentRoot`
 1. デフォルト `posts`
 
+## 設定ファイルスキーマ（Issue #17）
+
+現行実装で解釈する `.mdpub-wpblocks.json` のキーは `contentRoot` のみ。
+
+```json
+{
+    "contentRoot": "posts"
+}
+```
+
+| フィールド    | 型     | 必須 | デフォルト | 説明                                                      |
+| ------------- | ------ | ---- | ---------- | --------------------------------------------------------- |
+| `contentRoot` | string |      | `posts`    | 記事コンテンツのルート。CLI 引数/環境変数より優先度は低い |
+
+### `contentRoot` 解決優先順位
+
+1. CLI 引数 `--content-root`
+1. 環境変数 `MDPUB_CONTENT_ROOT`
+1. `.mdpub-wpblocks.json` の `contentRoot`
+1. デフォルト `posts`
+
+## 環境変数仕様（Issue #17）
+
+### WordPress 接続情報
+
+| 環境変数          | 必須 | 用途                 |
+| ----------------- | ---- | -------------------- |
+| `WP_URL`          | ○    | WP サイト URL        |
+| `WP_USER`         | ○    | WP ユーザー名        |
+| `WP_APP_PASSWORD` | ○    | Application Password |
+
+### 読み込み優先順位
+
+- スクリプト起動時に `.env` を読み込む
+- ただし `process.env` に既に値があるキーは上書きしない
+- そのため、優先順位は「プロセス環境変数 > `.env`」
+
+## アーキテクチャ / 処理フロー（Issue #17）
+
+```mermaid
+flowchart TD
+    A[CLI scripts/*] --> B[lib/cli-config.mjs\n引数/設定解決]
+    A --> C[lib/wp-client.mjs\n.env読込 + REST API]
+
+    D[Markdown index.md] --> E[lib/md-parser.mjs]
+    E --> F[lib/block-transforms/*]
+    F --> G[lib/wp-env.mjs serialize]
+
+    C --> H[(WordPress REST API)]
+    I[lib/media-slug.mjs\nexpectedSlug/uploadFilename] --> C
+
+    A --> J[scripts/upload-media.mjs]
+    J --> I
+    J --> H
+
+    A --> K[scripts/publish.mjs]
+    K --> D
+    K --> E
+    K --> F
+    K --> G
+    K --> I
+    K --> H
+
+    A --> L[scripts/pipeline.mjs]
+    L --> M[convert → upload-media → publish]
+```
+
 ## ステートレス設計
 
 ローカルに状態ファイルを持たず、毎回サーバに問い合わせる。

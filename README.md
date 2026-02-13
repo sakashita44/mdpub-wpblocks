@@ -1,13 +1,154 @@
 # mdpub-wpblocks
 
-ローカルの Markdown ファイルを Gutenberg ブロックに変換し、WordPress REST API 経由で投稿する CLI ツール。
+ローカルの Markdown を Gutenberg ブロックに変換し、WordPress REST API 経由で下書き投稿する CLI ツール。
 
 ## 特徴
 
-- `@wordpress/blocks` を使用した正確な Gutenberg ブロック生成
-- Frontmatter によるメタデータ管理（タイトル、カテゴリ、タグ等）
-- メディアの自動アップロードと URL 置換
-- ステートレス設計（ローカルに状態ファイルを持たず、命名規則とサーバ問い合わせで動作）
+- `@wordpress/blocks` によるブロック生成（`serialize()` で投稿可能な HTML 出力）
+- Frontmatter で投稿メタ（タイトル・slug・カテゴリ・タグ等）を管理
+- 画像アップロード時に決定論的 slug を使って既存判定（ステートレス）
+- 投稿時にローカル画像パスを WordPress メディア URL へ置換
+
+## Quick Start（初回セットアップ〜初投稿）
+
+### 1) 前提
+
+- Node.js v20+
+- Application Password が利用可能な WordPress
+
+### 2) セットアップ
+
+```bash
+git clone https://github.com/sakashita44/mdpub-wpblocks.git
+cd mdpub-wpblocks
+npm install
+cp .env.example .env
+```
+
+`.env` を編集:
+
+```text
+WP_URL=https://your-site.example
+WP_USER=your-user
+WP_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx-xxxx-xxxx
+```
+
+### 3) 記事を作成
+
+`posts/my-first-post/index.md` を作成:
+
+```markdown
+---
+title: '最初の記事'
+slug: 'my-first-post'
+categories:
+    - diary
+tags:
+    - first
+featured_image: 'images/cover.jpg'
+excerpt: 'はじめての投稿'
+---
+
+# こんにちは
+
+本文です。
+```
+
+### 4) 変換確認 → 画像同期 → 投稿
+
+```bash
+npm run convert -- my-first-post
+npm run upload-media -- my-first-post
+npm run publish -- my-first-post
+```
+
+まとめて実行する場合:
+
+```bash
+npm run pipeline -- my-first-post
+```
+
+## ワークフロー例（新規記事作成→画像配置→公開）
+
+1. `posts/<slug>/index.md` と `posts/<slug>/images/` を作成
+1. 本文に `![alt](images/photo.jpg "caption")` を記述
+1. `npm run upload-media -- <slug>` で画像を同期
+1. `npm run publish -- <slug>` で `draft` 投稿
+1. WordPress 管理画面で内容確認後に手動公開
+
+## CLI コマンド
+
+```bash
+npm run convert -- [--content-root <path>] <article-slug|path-to-md>
+npm run upload-media -- [--content-root <path>] <article-slug|path-to-article-dir> [--force-upload]
+npm run publish -- [--content-root <path>] <article-slug|path-to-index-md>
+npm run pipeline -- [--content-root <path>] [--force-upload] <article-slug|path>
+npm run sync -- [--output <path>] [--content-root <path>]
+```
+
+## 設定ファイルと環境変数
+
+### `.mdpub-wpblocks.json` スキーマ
+
+現行実装で解釈する設定は `contentRoot` のみ。
+
+```json
+{
+    "contentRoot": "posts"
+}
+```
+
+| キー          | 型     | デフォルト | 説明                                               |
+| ------------- | ------ | ---------- | -------------------------------------------------- |
+| `contentRoot` | string | `posts`    | 記事コンテンツのルートディレクトリ（相対パス推奨） |
+
+### `contentRoot` 解決優先順位
+
+1. CLI 引数 `--content-root`
+1. 環境変数 `MDPUB_CONTENT_ROOT`
+1. `.mdpub-wpblocks.json` の `contentRoot`
+1. デフォルト `posts`
+
+### WordPress 接続環境変数
+
+- `WP_URL`
+- `WP_USER`
+- `WP_APP_PASSWORD`
+
+優先順位は「既存のプロセス環境変数 > `.env`」。`.env` 読み込みは未定義キーのみ補完し、既存値は上書きしない。
+
+## トラブルシューティング
+
+### slug 衝突でアップロード失敗
+
+症状: `slug 不一致` エラー（期待 slug とレスポンス slug が異なる）。
+
+対処:
+
+1. WordPress 側で衝突しているメディア / 投稿を解消
+1. 必要なら `npm run upload-media -- --force-upload <slug>` で再アップロード
+1. 再度 `publish` を実行
+
+### 認証エラー（401/403）
+
+確認ポイント:
+
+- `.env` の `WP_URL`, `WP_USER`, `WP_APP_PASSWORD`
+- Application Password の有効性
+- Basic 認証を遮断するプラグイン/サーバ設定
+
+### カテゴリ・タグ解決失敗
+
+症状: `カテゴリが見つかりません` / `タグが見つかりません`。
+
+対処: WordPress 側に同 slug を事前作成するか、frontmatter を既存 slug に合わせる。
+
+## サンプル記事
+
+- `posts/sample-article/index.md` は E2E 動作確認用
+- frontmatter（`title`, `slug`, `categories`, `tags`, `excerpt`）の最小構成を含む
+- 本文は見出し・箇条書き・GFM テーブルの変換確認に使える
+- 詳細解説: [posts/sample-article/README.md](posts/sample-article/README.md)
 
 ## 対応ブロック
 
@@ -24,134 +165,13 @@
 | `<iframe>` 等         | `core/html`                    |
 | `:::columns`          | `core/columns` + `core/column` |
 
-## セットアップ
+詳細仕様は [docs/SPEC.md](docs/SPEC.md) を参照。
 
-### 前提条件
-
-- Node.js v20 以上
-- WordPress サイト（REST API 有効、アプリケーションパスワード設定済み）
-
-### インストール
+## 開発
 
 ```bash
-git clone https://github.com/sakashita44/mdpub-wpblocks.git
-cd mdpub-wpblocks
-npm install
-```
-
-### 環境設定
-
-`.env.example` をコピーして `.env` を作成し、WordPress の接続情報を設定する。
-
-```bash
-cp .env.example .env
-```
-
-```text
-WP_URL=https://your-site.com
-WP_USER=your-username
-WP_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx-xxxx-xxxx
-```
-
-### 開発ツール
-
-`npm install` で pre-commit フック（husky）が自動セットアップされる。コミット時に lint-staged が Prettier / ESLint / markdownlint を実行する。
-
-```bash
-npm run lint      # ESLint + markdownlint チェック
-npm run format    # Prettier + ESLint 自動修正
-```
-
-## 使い方
-
-### Markdown → ブロック HTML 変換
-
-```bash
-npm run convert -- posts/my-article.md
-```
-
-### メディアアップロード
-
-```bash
-npm run upload-media -- posts/my-article/
-```
-
-### 記事投稿
-
-```bash
-npm run publish -- posts/my-article.md
-```
-
-### E2E 統合実行
-
-```bash
-npm run pipeline -- sample-article
-```
-
-### レジストリ再生成
-
-```bash
-npm run sync
-```
-
-## コンテンツルート設定
-
-`posts/` の配置場所（content root）は以下の優先順位で解決する。
-
-1. CLI 引数 `--content-root`
-1. 環境変数 `MDPUB_CONTENT_ROOT`
-1. 設定ファイル `.mdpub-wpblocks.json` の `contentRoot`
-1. デフォルト `posts`
-
-```json
-{
-    "contentRoot": "posts"
-}
-```
-
-## Markdown ファイル形式
-
-記事は `posts/<slug>/index.md` に配置する。
-
-```markdown
----
-title: '記事タイトル'
-slug: 'article-slug'
-categories:
-    - diary
-tags:
-    - tag1
-featured_image: 'images/cover.jpg' # 任意
-excerpt: '抜粋テキスト...' # 任意
-date: '2026-02-10' # 任意
----
-
-本文をここに記述する。
-```
-
-詳細な仕様は [docs/SPEC.md](docs/SPEC.md) を参照。
-
-## ディレクトリ構成
-
-```text
-mdpub-wpblocks/
-├─ lib/
-│   ├─ wp-env.mjs              ← DOM ポリフィル + WP Blocks 初期化
-│   ├─ md-parser.mjs           ← markdown-it 設定 + AST 生成
-│   ├─ block-transforms/       ← AST → createBlock() 変換
-│   ├─ inline-format.mjs       ← インライン要素 HTML 変換
-│   ├─ wp-client.mjs           ← REST API クライアント
-│   └─ media-slug.mjs          ← ローカルパス → WP メディア slug 算出
-├─ scripts/
-│   ├─ convert.mjs             ← CLI: MD → ブロック HTML
-│   ├─ upload-media.mjs        ← CLI: 画像アップロード
-│   ├─ publish.mjs             ← CLI: 記事投稿
-│   ├─ pipeline.mjs            ← CLI: 統合実行（変換→アップロード→投稿）
-│   └─ sync.mjs                ← CLI: .registry.yaml 再生成
-├─ posts/                      ← 記事ファイル (.gitignore)
-└─ docs/
-    ├─ SPEC.md                 ← 技術仕様書
-    └─ PROGRESS.md             ← 開発進捗
+npm run lint
+npm test
 ```
 
 ## ライセンス
