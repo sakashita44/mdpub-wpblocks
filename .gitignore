@@ -1,6 +1,7 @@
 node_modules/
 node/
-posts/
+posts/*
+!posts/sample-article/
 .registry.yaml
 .env
 *.log
