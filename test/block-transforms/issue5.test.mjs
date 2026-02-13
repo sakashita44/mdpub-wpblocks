@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { parseMd } from '../../lib/md-parser.mjs';
 import { transformTokens } from '../../lib/block-transforms/index.mjs';
 
@@ -77,5 +77,21 @@ describe('Issue #5 transforms', () => {
         expect(String(secondCol.innerBlocks[0].attributes.caption)).toBe(
             'キャプション2',
         );
+    });
+
+    it(':::columns 内の非画像段落は警告してスキップ', () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const { tokens } = parseMd(':::columns\nJust text\n:::');
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/columns');
+        expect(blocks[0].innerBlocks).toHaveLength(0);
+        expect(warnSpy).toHaveBeenCalledWith(
+            '[warn] columns 内の非画像段落をスキップしました',
+        );
+
+        warnSpy.mockRestore();
     });
 });

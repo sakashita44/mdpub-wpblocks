@@ -173,6 +173,11 @@ describe('renderInline', () => {
         expect(renderInline(tokens)).toBe('price is $10');
     });
 
+    it('display math 形式の $$...$$ はインライン数式として変換しない', () => {
+        const tokens = [textToken('see $$x^2$$ end')];
+        expect(renderInline(tokens)).toBe('see $$x^2$$ end');
+    });
+
     it('html_inline をエスケープして保持する', () => {
         const tokens = [
             textToken('before '),
