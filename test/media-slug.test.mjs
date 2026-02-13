@@ -73,6 +73,12 @@ describe('expectedSlug', () => {
             'article-a-test',
         );
     });
+
+    it('slug を算出できない場合は例外を投げる', () => {
+        expect(() => expectedSlug('images/写真.jpg', '')).toThrow(
+            'メディア slug を算出できません',
+        );
+    });
 });
 
 describe('extractImagePaths', () => {
