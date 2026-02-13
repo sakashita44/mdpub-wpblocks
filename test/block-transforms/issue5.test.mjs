@@ -1,0 +1,81 @@
+import { describe, it, expect } from 'vitest';
+import { parseMd } from '../../lib/md-parser.mjs';
+import { transformTokens } from '../../lib/block-transforms/index.mjs';
+
+describe('Issue #5 transforms', () => {
+    it('インライン数式を paragraph 内ショートコードへ変換', () => {
+        const { tokens } = parseMd('これは $E=mc^2$ です');
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/paragraph');
+        expect(String(blocks[0].attributes.content)).toContain(
+            '[katex]E=mc^2[/katex]',
+        );
+    });
+
+    it('display math を core/shortcode に変換', () => {
+        const { tokens } = parseMd('$$\\int_0^1 f(x)dx$$');
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/shortcode');
+        expect(String(blocks[0].attributes.text)).toBe(
+            '[katex display=true]\\int_0^1 f(x)dx[/katex]',
+        );
+    });
+
+    it('単独 URL 行を core/embed に変換', () => {
+        const url = 'https://www.youtube.com/watch?v=xxxxx';
+        const { tokens } = parseMd(url);
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/embed');
+        expect(blocks[0].attributes.url).toBe(url);
+    });
+
+    it('HTML ブロックを core/html にパススルー', () => {
+        const html =
+            '<iframe src="https://example.com/embed" width="640" height="480"></iframe>';
+        const { tokens } = parseMd(html);
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/html');
+        expect(String(blocks[0].attributes.content)).toContain('<iframe');
+        expect(String(blocks[0].attributes.content)).toContain(
+            'https://example.com/embed',
+        );
+    });
+
+    it(':::columns 内の各画像を core/column に配置', () => {
+        const markdown = `:::columns
+![alt1](images/a.jpg "キャプション1")
+![alt2](images/b.jpg "キャプション2")
+:::`;
+        const { tokens } = parseMd(markdown);
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/columns');
+        expect(blocks[0].innerBlocks).toHaveLength(2);
+
+        const firstCol = blocks[0].innerBlocks[0];
+        const secondCol = blocks[0].innerBlocks[1];
+        expect(firstCol.name).toBe('core/column');
+        expect(secondCol.name).toBe('core/column');
+
+        expect(firstCol.innerBlocks[0].name).toBe('core/image');
+        expect(firstCol.innerBlocks[0].attributes.url).toBe('images/a.jpg');
+        expect(String(firstCol.innerBlocks[0].attributes.caption)).toBe(
+            'キャプション1',
+        );
+
+        expect(secondCol.innerBlocks[0].name).toBe('core/image');
+        expect(secondCol.innerBlocks[0].attributes.url).toBe('images/b.jpg');
+        expect(String(secondCol.innerBlocks[0].attributes.caption)).toBe(
+            'キャプション2',
+        );
+    });
+});

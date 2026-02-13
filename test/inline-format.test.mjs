@@ -162,4 +162,14 @@ describe('renderInline', () => {
             'Hello <strong>bold</strong> and <em>italic</em>',
         );
     });
+
+    it('インライン数式を KaTeX ショートコードに変換', () => {
+        const tokens = [textToken('before $x^2$ after')];
+        expect(renderInline(tokens)).toBe('before [katex]x^2[/katex] after');
+    });
+
+    it('エスケープされた $ は通常文字として扱う', () => {
+        const tokens = [textToken('price is \\$10')];
+        expect(renderInline(tokens)).toBe('price is $10');
+    });
 });
