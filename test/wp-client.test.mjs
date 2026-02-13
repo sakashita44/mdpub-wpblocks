@@ -86,6 +86,131 @@ describe('createWpClient', () => {
         });
     });
 
+    describe('findPostBySlug', () => {
+        it('slug 一致する投稿を返す', async () => {
+            const post = { id: 10, slug: 'article-a' };
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve([post]),
+            });
+
+            const wp = createWpClient(testConfig);
+            const result = await wp.findPostBySlug('article-a');
+
+            expect(result).toEqual(post);
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/wp/v2/posts?slug=article-a&per_page=1',
+                expect.anything(),
+            );
+        });
+    });
+
+    describe('findCategoryBySlug / findTagBySlug', () => {
+        it('カテゴリ slug を検索できる', async () => {
+            const category = { id: 3, slug: 'diary' };
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve([category]),
+            });
+
+            const wp = createWpClient(testConfig);
+            const result = await wp.findCategoryBySlug('diary');
+
+            expect(result).toEqual(category);
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/wp/v2/categories?slug=diary&per_page=1',
+                expect.anything(),
+            );
+        });
+
+        it('タグ slug を検索できる', async () => {
+            const tag = { id: 9, slug: 'tag1' };
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve([tag]),
+            });
+
+            const wp = createWpClient(testConfig);
+            const result = await wp.findTagBySlug('tag1');
+
+            expect(result).toEqual(tag);
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/wp/v2/tags?slug=tag1&per_page=1',
+                expect.anything(),
+            );
+        });
+    });
+
+    describe('createPost / updatePost', () => {
+        it('新規投稿を作成できる', async () => {
+            const created = { id: 100, slug: 'article-a' };
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve(created),
+            });
+
+            const wp = createWpClient(testConfig);
+            const payload = {
+                title: '記事',
+                slug: 'article-a',
+                categories: [1],
+                tags: [2],
+                content:
+                    '<!-- wp:paragraph --><p>body</p><!-- /wp:paragraph -->',
+                status: 'draft',
+            };
+
+            const result = await wp.createPost(payload);
+
+            expect(result).toEqual(created);
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/wp/v2/posts',
+                expect.objectContaining({
+                    method: 'POST',
+                    headers: expect.objectContaining({
+                        Authorization: expectedAuth,
+                        'Content-Type': 'application/json',
+                    }),
+                    body: JSON.stringify(payload),
+                }),
+            );
+        });
+
+        it('既存投稿を更新できる', async () => {
+            const updated = { id: 100, slug: 'article-a' };
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve(updated),
+            });
+
+            const wp = createWpClient(testConfig);
+            const payload = {
+                title: '更新記事',
+                slug: 'article-a',
+                categories: [1],
+                tags: [],
+                content:
+                    '<!-- wp:paragraph --><p>updated</p><!-- /wp:paragraph -->',
+                status: 'draft',
+            };
+
+            const result = await wp.updatePost(100, payload);
+
+            expect(result).toEqual(updated);
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/wp/v2/posts/100',
+                expect.objectContaining({
+                    method: 'PUT',
+                    headers: expect.objectContaining({
+                        Authorization: expectedAuth,
+                        'Content-Type': 'application/json',
+                    }),
+                    body: JSON.stringify(payload),
+                }),
+            );
+        });
+    });
+
     describe('uploadMedia', () => {
         it('POST /wp/v2/media にファイルを送信し結果を返す', async () => {
             const uploaded = { id: 456, slug: 'article-a-photo' };
