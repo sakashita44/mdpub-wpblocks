@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createBlock } from '../../lib/wp-env.mjs';
+import { parseMd } from '../../lib/md-parser.mjs';
+import { transformTokens } from '../../lib/block-transforms/index.mjs';
 import {
     transformImage,
     isImageOnly,
@@ -124,5 +126,18 @@ describe('transformImage', () => {
         const block = transformImage(inline, deps);
 
         expect(block.attributes.alt).toBe('');
+    });
+});
+
+describe('transformTokens (image paragraph)', () => {
+    it('同一段落に画像が複数ある場合は画像数分の core/image を生成', () => {
+        const { tokens } = parseMd('![a](img/a.jpg) ![b](img/b.jpg)');
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(2);
+        expect(blocks[0].name).toBe('core/image');
+        expect(blocks[1].name).toBe('core/image');
+        expect(blocks[0].attributes.url).toBe('img/a.jpg');
+        expect(blocks[1].attributes.url).toBe('img/b.jpg');
     });
 });

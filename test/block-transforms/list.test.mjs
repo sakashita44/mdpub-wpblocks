@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { createBlock } from '../../lib/wp-env.mjs';
 import { renderInline } from '../../lib/inline-format.mjs';
+import { parseMd } from '../../lib/md-parser.mjs';
+import { transformTokens } from '../../lib/block-transforms/index.mjs';
 import { transformList } from '../../lib/block-transforms/list.mjs';
 
 const deps = { createBlock, renderInline };
@@ -158,6 +160,17 @@ describe('transformList', () => {
         const { block } = transformList(tokens, 0, deps);
         expect(String(block.innerBlocks[0].attributes.content)).toBe(
             'Click <a href="https://example.com">here</a>',
+        );
+    });
+
+    it('loose list の複数段落を保持する', () => {
+        const { tokens } = parseMd('- para1\n\n  para2');
+        const blocks = transformTokens(tokens);
+
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/list');
+        expect(String(blocks[0].innerBlocks[0].attributes.content)).toBe(
+            'para1<br><br>para2',
         );
     });
 });
