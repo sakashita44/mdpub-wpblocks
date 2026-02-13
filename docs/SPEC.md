@@ -56,7 +56,7 @@ date: '2026-02-10' # 任意（未指定なら投稿時の日時）
 
 ## Markdown 対応記法と変換ルール
 
-### 基本ブロック（Issue #3）
+### 基本ブロック
 
 | Markdown                      | Gutenberg ブロック | 変換仕様                                                    |
 | ----------------------------- | ------------------ | ----------------------------------------------------------- |
@@ -76,7 +76,7 @@ paragraph / heading の `content` 内で以下のインライン要素を HTML �
 | `[text](url)` | `<a href="url">text</a>` |
 | `~~strike~~`  | `<s>strike</s>`          |
 
-### テーブル・リスト・画像（Issue #4）
+### テーブル・リスト・画像
 
 #### テーブル
 
@@ -106,9 +106,9 @@ GFM テーブル → `core/table`
 | `align`    | `center`               |
 | `lightbox` | `true`（全画像で有効） |
 
-画像パスは変換時点ではローカルパスのまま。メディア URL への置換は投稿時（Issue #7）に実施。
+画像パスは変換時点ではローカルパスのまま。メディア URL への置換は投稿時に実施。
 
-### 数式・Embed・HTML・カラム（Issue #5）
+### 数式・Embed・HTML・カラム
 
 #### 数式（KaTeX）
 
@@ -152,7 +152,7 @@ https://www.youtube.com/watch?v=xxxxx
 - `markdown-it-container` プラグインで `:::columns` をパース
 - 内部の各画像を個別の `core/column` に配置
 
-## メディアアップロード仕様（Issue #6）
+## メディアアップロード仕様
 
 ### API
 
@@ -202,7 +202,7 @@ https://www.youtube.com/watch?v=xxxxx
 4. レスポンスの slug を検証
 ```
 
-## 記事投稿仕様（Issue #7）
+## 記事投稿仕様
 
 ### API
 
@@ -242,7 +242,7 @@ https://www.youtube.com/watch?v=xxxxx
 1. `GET /wp/v2/media?slug=<slug>` でメディア URL を取得
 1. ブロック HTML 内のローカルパスを取得した URL に置換
 
-## E2E 統合・CLI 仕上げ（Issue #8）
+## E2E 統合・CLI 仕上げ
 
 ### 統合実行モード
 
@@ -268,7 +268,7 @@ https://www.youtube.com/watch?v=xxxxx
 1. 設定ファイル `.mdpub-wpblocks.json` の `contentRoot`
 1. デフォルト `posts`
 
-## 設定ファイルスキーマ（Issue #17）
+## 設定ファイルスキーマ
 
 現行実装で解釈する `.mdpub-wpblocks.json` のキーは `contentRoot` のみ。
 
@@ -289,7 +289,7 @@ https://www.youtube.com/watch?v=xxxxx
 1. `.mdpub-wpblocks.json` の `contentRoot`
 1. デフォルト `posts`
 
-## 環境変数仕様（Issue #17）
+## 環境変数仕様
 
 ### WordPress 接続情報
 
@@ -305,7 +305,7 @@ https://www.youtube.com/watch?v=xxxxx
 - ただし `process.env` に既に値があるキーは上書きしない
 - そのため、優先順位は「プロセス環境変数 > `.env`」
 
-## アーキテクチャ / 処理フロー（Issue #17）
+## アーキテクチャ / 処理フロー
 
 ```mermaid
 flowchart TD
