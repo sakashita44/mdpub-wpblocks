@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
+    extractFlag,
     extractOption,
     resolveContentRoot,
     resolveArticleDirPath,
@@ -52,6 +53,31 @@ describe('cli-config', () => {
                 '--content-root',
             ),
         ).toThrow('--content-root に値が指定されていません');
+    });
+
+    it('extractOption は重複指定時に後勝ちで解釈する', () => {
+        const parsed = extractOption(
+            [
+                '--content-root',
+                'first-root',
+                '--content-root=second-root',
+                'article-a',
+            ],
+            '--content-root',
+        );
+
+        expect(parsed.value).toBe('second-root');
+        expect(parsed.rest).toEqual(['article-a']);
+    });
+
+    it('extractFlag はフラグを抽出して残り引数を返す', () => {
+        const parsed = extractFlag(
+            ['--force-upload', '--content-root', 'posts2', 'article-a'],
+            '--force-upload',
+        );
+
+        expect(parsed.enabled).toBe(true);
+        expect(parsed.rest).toEqual(['--content-root', 'posts2', 'article-a']);
     });
 
     it('content root 優先順位は CLI > ENV > 設定ファイル > デフォルト', () => {

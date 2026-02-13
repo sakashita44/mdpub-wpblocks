@@ -13,7 +13,10 @@ const projectRoot = resolveProjectRoot(import.meta.url);
 
 loadEnv(resolve(projectRoot, '.env'));
 
-main();
+main().catch((e) => {
+    console.error(`❌ sync に失敗しました: ${e.message}`);
+    process.exit(1);
+});
 
 async function main() {
     let outputPath;

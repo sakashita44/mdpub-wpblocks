@@ -13,6 +13,7 @@
 import { dirname } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import {
+    extractFlag,
     extractOption,
     resolveContentRoot,
     resolveArticleMarkdownPath,
@@ -22,12 +23,15 @@ import { resolveProjectRoot } from '../lib/project-root.mjs';
 const projectRoot = resolveProjectRoot(import.meta.url);
 
 const args = process.argv.slice(2);
-const forceUpload = args.includes('--force-upload');
+const { enabled: forceUpload, rest: argsWithoutForceUpload } = extractFlag(
+    args,
+    '--force-upload',
+);
 let cliContentRoot;
 let rest;
 try {
     ({ value: cliContentRoot, rest } = extractOption(
-        args.filter((a) => a !== '--force-upload'),
+        argsWithoutForceUpload,
         '--content-root',
     ));
 } catch (e) {

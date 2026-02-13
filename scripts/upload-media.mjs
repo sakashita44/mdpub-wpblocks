@@ -18,6 +18,7 @@ import {
 } from '../lib/media-slug.mjs';
 import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.mjs';
 import {
+    extractFlag,
     extractOption,
     resolveContentRoot,
     resolveArticleDirPath,
@@ -31,12 +32,15 @@ loadEnv(resolve(projectRoot, '.env'));
 
 // --- 引数パース ---
 const args = process.argv.slice(2);
-const forceUpload = args.includes('--force-upload');
+const { enabled: forceUpload, rest: argsWithoutForceUpload } = extractFlag(
+    args,
+    '--force-upload',
+);
 let cliContentRoot;
 let withoutRoot;
 try {
     ({ value: cliContentRoot, rest: withoutRoot } = extractOption(
-        args.filter((a) => a !== '--force-upload'),
+        argsWithoutForceUpload,
         '--content-root',
     ));
 } catch (e) {
