@@ -91,6 +91,12 @@ describe('expectedSlug', () => {
             'メディア slug を算出できません',
         );
     });
+
+    it('全角のみファイル名で slug がプレフィックスに退化する場合は例外を投げる', () => {
+        expect(() => expectedSlug('images/テスト.jpg', 'article-a')).toThrow(
+            'プレフィックスと同一',
+        );
+    });
 });
 
 describe('extractImagePaths', () => {
@@ -147,5 +153,13 @@ describe('extractImagePaths', () => {
             'images/space file.png',
             'images/normal.jpg',
         ]);
+    });
+
+    it('angle-bracket 記法が通常 regex で二重マッチしない', () => {
+        const body = '![a](<images/テスト 画像.jpg>)';
+        const paths = extractImagePaths(body);
+        expect(paths).toEqual(['images/テスト 画像.jpg']);
+        // <images/...> のように angle bracket が含まれたパスが混入しない
+        expect(paths.every((p) => !p.startsWith('<'))).toBe(true);
     });
 });

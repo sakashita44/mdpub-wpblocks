@@ -110,7 +110,7 @@ describe('createWpClient', () => {
 
             expect(result).toEqual(post);
             expect(globalThis.fetch).toHaveBeenCalledWith(
-                'https://example.com/wp-json/wp/v2/posts?slug=article-a&per_page=1',
+                'https://example.com/wp-json/wp/v2/posts?slug=article-a&per_page=1&status=publish,draft,pending,future,private',
                 expect.anything(),
             );
         });
