@@ -377,3 +377,54 @@ flowchart TD
 `.env` ファイルで管理（`.env.example` 参照）。
 
 REST API リクエストは Basic 認証（`Authorization: Basic base64(user:app_password)`）を使用する。
+
+## ローカルテスト環境（wp-env）
+
+### セットアップ
+
+```bash
+npx wp-env start
+```
+
+起動後 `http://localhost:8888` でアクセス可能。管理画面は `http://localhost:8888/wp-admin`（admin / password）。
+
+### パーマリンク設定
+
+REST API の `/wp-json/` パスを有効にするため、パーマリンクを `/%postname%/` に設定する必要がある。
+
+**Git Bash では `%` が環境変数として展開されるため、`npx wp-env run cli` 経由で直接 `%postname%` を渡せない。** Docker コンテナ内で bash を介して実行する。
+
+```bash
+WP_ENV_PATH=$(npx wp-env install-path 2>/dev/null)
+docker compose -f "$WP_ENV_PATH/docker-compose.yml" exec -T cli bash -c \
+  "wp option update permalink_structure '/%postname%/'"
+docker compose -f "$WP_ENV_PATH/docker-compose.yml" exec -T cli bash -c \
+  "wp rewrite flush --hard"
+```
+
+### Application Password 発行
+
+```bash
+WP_ENV_PATH=$(npx wp-env install-path 2>/dev/null)
+docker compose -f "$WP_ENV_PATH/docker-compose.yml" exec -T cli bash -c \
+  "wp user application-password create admin mdpub --porcelain"
+```
+
+出力されたパスワードを `.env` の `WP_APP_PASSWORD` に設定する。
+
+### テストデータ準備
+
+```bash
+# カテゴリ（uncategorized は WP デフォルトで存在）
+# タグ作成
+WP_ENV_PATH=$(npx wp-env install-path 2>/dev/null)
+docker compose -f "$WP_ENV_PATH/docker-compose.yml" exec -T cli bash -c \
+  "wp term create post_tag test"
+```
+
+### 制約事項
+
+| 制約                 | 詳細                                                                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Git Bash の `%` 展開 | `npx wp-env run cli` に `%postname%` 等を渡す場合は `docker compose exec -T cli bash -c "..."` を使用                             |
+| REST API パス        | パーマリンク未設定の場合 `/wp-json/` が 404 になる。`?rest_route=` パラメータ経由でアクセスは可能（フォールバック機能で自動対応） |
