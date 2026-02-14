@@ -1,8 +1,10 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
     js.configs.recommended,
+    ...tseslint.configs.recommended,
     {
         languageOptions: {
             ecmaVersion: 'latest',
@@ -13,13 +15,13 @@ export default [
         },
         rules: {
             // 未使用変数: アンダースコア始まりは許可
-            'no-unused-vars': [
+            '@typescript-eslint/no-unused-vars': [
                 'error',
                 { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
             ],
         },
     },
     {
-        ignores: ['node_modules/'],
+        ignores: ['node_modules/', 'dist/'],
     },
-];
+);
