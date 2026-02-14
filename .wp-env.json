@@ -1,5 +1,6 @@
 {
     "core": "WordPress/WordPress#6.8",
+    "plugins": ["https://downloads.wordpress.org/plugin/katex.2.2.5.zip"],
     "config": {
         "WP_DEBUG": true,
         "WP_DEBUG_LOG": true
