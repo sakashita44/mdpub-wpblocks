@@ -21,6 +21,14 @@ import type {
 const require = createRequire(import.meta.url);
 const window = new Window({ url: 'https://localhost' });
 
+/**
+ * happy-dom の Window が保持するリソース（タイマー等）を解放する。
+ * スクリプト終了前に呼ぶことで、イベントループが自然に空になり process.exit() が不要になる。
+ */
+export function cleanupWpEnv(): void {
+    window.happyDOM.abort();
+}
+
 // @wordpress/blocks が参照する DOM API をグローバルに登録
 const domGlobals = [
     'document',

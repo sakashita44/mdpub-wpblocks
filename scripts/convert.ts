@@ -6,7 +6,7 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
-import { serialize } from '../lib/wp-env.js';
+import { serialize, cleanupWpEnv } from '../lib/wp-env.js';
 import { parseMd } from '../lib/md-parser.js';
 import { transformTokens } from '../lib/block-transforms/index.js';
 import {
@@ -58,5 +58,4 @@ const blocks = transformTokens(tokens);
 const html = serialize(blocks);
 
 console.log(html);
-// happy-dom の Window がイベントループを維持するため明示的に終了
-process.exit(0);
+cleanupWpEnv();
