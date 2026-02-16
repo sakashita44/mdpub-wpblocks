@@ -34,16 +34,21 @@ Markdown → (md-parser) → AST → (block-transforms) → createBlock() → se
 
 ### モジュール構成
 
-- `lib/wp-env.mjs` — DOM ポリフィル + `@wordpress/blocks` 初期化。**他の全モジュールより先に import する必要がある**
-- `lib/md-parser.mjs` — markdown-it による AST 生成
+- `lib/wp-env.ts` — DOM ポリフィル + `@wordpress/blocks` 初期化。**他の全モジュールより先に import する必要がある**
+- `lib/md-parser.ts` — markdown-it による AST 生成
 - `lib/block-transforms/` — AST ノード → `createBlock()` 変換
-- `lib/inline-format.mjs` — インライン要素（bold, italic, link）の HTML 変換
-- `lib/wp-client.mjs` — WordPress REST API クライアント
-- `lib/media-slug.mjs` — ローカルパス → WP メディア slug 算出（純粋関数）
+- `lib/inline-format.ts` — インライン要素（bold, italic, link）の HTML 変換
+- `lib/wp-client.ts` — WordPress REST API クライアント
+- `lib/media-slug.ts` — ローカルパス → WP メディア slug 算出（純粋関数）
+- `lib/types.ts` — 共通型定義（TransformDeps, WpClient, Frontmatter 等）
+
+### ビルド
+
+`tsc -p tsconfig.build.json` で `dist/` にトランスパイル。`npm run build` で実行。スクリプト・CLI は `dist/` 配下の `.js` を実行する。
 
 ### WP パッケージの読み込み制約
 
-`@wordpress/blocks` の ESM 版は Node.js v22+ で `ERR_IMPORT_ATTRIBUTE_MISSING` が発生するため、`createRequire` で CJS 版を使用する。この制約は `lib/wp-env.mjs` に局所化されている。
+`@wordpress/blocks` の ESM 版は Node.js v22+ で `ERR_IMPORT_ATTRIBUTE_MISSING` が発生するため、`createRequire` で CJS 版を使用する。この制約は `lib/wp-env.ts` に局所化されている。
 
 ### ステートレス設計
 
@@ -51,6 +56,7 @@ Markdown → (md-parser) → AST → (block-transforms) → createBlock() → se
 
 ## 技術スタック
 
+- TypeScript（`tsc` → `dist/` トランスパイル）
 - Node.js (ESM, `"type": "module"`)
 - `@wordpress/blocks` + `@wordpress/block-library` — Gutenberg ブロック生成・シリアライズ
 - `happy-dom` — DOM ポリフィル（Node.js 環境で WP Blocks を動作させるため）

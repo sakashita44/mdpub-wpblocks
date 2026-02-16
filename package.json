@@ -4,22 +4,24 @@
     "description": "Markdown を Gutenberg ブロックに変換し WordPress REST API 経由で投稿するツール",
     "type": "module",
     "bin": {
-        "mdpub": "./bin/mdpub.mjs"
+        "mdpub": "./dist/bin/mdpub.js"
     },
     "scripts": {
-        "convert": "node scripts/convert.mjs",
-        "upload-media": "node scripts/upload-media.mjs",
-        "publish": "node scripts/publish.mjs",
-        "pipeline": "node scripts/pipeline.mjs",
-        "sync": "node scripts/sync.mjs",
+        "build": "tsc -p tsconfig.build.json",
+        "build:check": "tsc --noEmit",
+        "convert": "node dist/scripts/convert.js",
+        "upload-media": "node dist/scripts/upload-media.js",
+        "publish": "node dist/scripts/publish.js",
+        "pipeline": "node dist/scripts/pipeline.js",
+        "sync": "node dist/scripts/sync.js",
         "wp:start": "wp-env start",
         "wp:stop": "wp-env stop",
         "wp:destroy": "wp-env destroy",
-        "init": "node bin/mdpub.mjs init",
+        "init": "node dist/bin/mdpub.js init",
         "prepare": "husky",
         "test": "vitest run",
-        "lint": "eslint \"lib/**/*.mjs\" \"scripts/**/*.mjs\" \"test/**/*.mjs\" \"bin/**/*.mjs\" && markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#posts/upload-test\"",
-        "format": "prettier --write \"**/*.{mjs,json,md}\" && eslint --fix \"lib/**/*.mjs\" \"scripts/**/*.mjs\" \"test/**/*.mjs\" \"bin/**/*.mjs\"",
+        "lint": "eslint \"lib/**/*.ts\" \"scripts/**/*.ts\" \"test/**/*.ts\" \"bin/**/*.ts\" && markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#posts/upload-test\"",
+        "format": "prettier --write \"**/*.{ts,json,md}\" && eslint --fix \"lib/**/*.ts\" \"scripts/**/*.ts\" \"test/**/*.ts\" \"bin/**/*.ts\"",
         "fix": "npm run format && npm run lint"
     },
     "author": "sakashita44",
@@ -38,14 +40,18 @@
         "yaml": "^2.8.2"
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@types/markdown-it": "^14.1.2",
+        "@types/node": "^25.2.3",
         "@wordpress/env": "^10.39.0",
-        "@eslint/js": "^10.0.1",
-        "eslint": "^10.0.0",
+        "eslint": "^9.39.2",
         "globals": "^17.3.0",
         "husky": "^9.1.7",
         "lint-staged": "^16.2.7",
         "markdownlint-cli2": "^0.20.0",
         "prettier": "^3.8.1",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.55.0",
         "vitest": "^4.0.18"
     }
 }
