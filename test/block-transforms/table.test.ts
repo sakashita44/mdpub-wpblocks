@@ -3,6 +3,11 @@ import type Token from 'markdown-it/lib/token.mjs';
 import { createBlock } from '../../lib/wp-env.js';
 import { renderInline } from '../../lib/inline-format.js';
 import { transformTable } from '../../lib/block-transforms/table.js';
+import {
+    mockToken,
+    mockTextToken,
+    mockInlineToken,
+} from '../helpers/mock-token.js';
 
 /** テーブル属性の型（テスト用アサーション） */
 interface TableAttrs {
@@ -24,61 +29,41 @@ function fakeTableTokens(
     bodyRows: string[][],
     aligns?: (string | undefined)[],
 ): Token[] {
-    const tokens: object[] = [];
-    tokens.push({ type: 'table_open' });
+    const tokens: Token[] = [];
+    tokens.push(mockToken({ type: 'table_open' }));
 
     // thead
-    tokens.push({ type: 'thead_open' });
-    tokens.push({ type: 'tr_open' });
+    tokens.push(mockToken({ type: 'thead_open' }));
+    tokens.push(mockToken({ type: 'tr_open' }));
     headRow.forEach((cell: string, idx: number) => {
-        const attrs = aligns?.[idx]
+        const attrs: [string, string][] | null = aligns?.[idx]
             ? [['style', `text-align:${aligns[idx]}`]]
             : null;
-        tokens.push({
-            type: 'th_open',
-            attrs,
-            attrGet: (k: string) => {
-                const pair = attrs?.find((a) => a[0] === k);
-                return pair ? pair[1] : null;
-            },
-        });
-        tokens.push({
-            type: 'inline',
-            children: [{ type: 'text', content: cell }],
-        });
-        tokens.push({ type: 'th_close' });
+        tokens.push(mockToken({ type: 'th_open', attrs }));
+        tokens.push(mockInlineToken([mockTextToken(cell)]));
+        tokens.push(mockToken({ type: 'th_close' }));
     });
-    tokens.push({ type: 'tr_close' });
-    tokens.push({ type: 'thead_close' });
+    tokens.push(mockToken({ type: 'tr_close' }));
+    tokens.push(mockToken({ type: 'thead_close' }));
 
     // tbody
-    tokens.push({ type: 'tbody_open' });
+    tokens.push(mockToken({ type: 'tbody_open' }));
     for (const row of bodyRows) {
-        tokens.push({ type: 'tr_open' });
+        tokens.push(mockToken({ type: 'tr_open' }));
         row.forEach((cell: string, idx: number) => {
-            const attrs = aligns?.[idx]
+            const attrs: [string, string][] | null = aligns?.[idx]
                 ? [['style', `text-align:${aligns[idx]}`]]
                 : null;
-            tokens.push({
-                type: 'td_open',
-                attrs,
-                attrGet: (k: string) => {
-                    const pair = attrs?.find((a) => a[0] === k);
-                    return pair ? pair[1] : null;
-                },
-            });
-            tokens.push({
-                type: 'inline',
-                children: [{ type: 'text', content: cell }],
-            });
-            tokens.push({ type: 'td_close' });
+            tokens.push(mockToken({ type: 'td_open', attrs }));
+            tokens.push(mockInlineToken([mockTextToken(cell)]));
+            tokens.push(mockToken({ type: 'td_close' }));
         });
-        tokens.push({ type: 'tr_close' });
+        tokens.push(mockToken({ type: 'tr_close' }));
     }
-    tokens.push({ type: 'tbody_close' });
+    tokens.push(mockToken({ type: 'tbody_close' }));
 
-    tokens.push({ type: 'table_close' });
-    return tokens as unknown as Token[];
+    tokens.push(mockToken({ type: 'table_close' }));
+    return tokens;
 }
 
 describe('transformTable', () => {
@@ -138,30 +123,23 @@ describe('transformTable', () => {
     });
 
     it('セル内のインライン要素を HTML に変換', () => {
-        const tokens = [
-            { type: 'table_open' },
-            { type: 'thead_open' },
-            { type: 'tr_open' },
-            {
-                type: 'th_open',
-                attrs: null,
-                attrGet: () => null,
-            },
-            {
-                type: 'inline',
-                children: [
-                    { type: 'strong_open' },
-                    { type: 'text', content: 'Bold' },
-                    { type: 'strong_close' },
-                ],
-            },
-            { type: 'th_close' },
-            { type: 'tr_close' },
-            { type: 'thead_close' },
-            { type: 'tbody_open' },
-            { type: 'tbody_close' },
-            { type: 'table_close' },
-        ] as unknown as Token[];
+        const tokens: Token[] = [
+            mockToken({ type: 'table_open' }),
+            mockToken({ type: 'thead_open' }),
+            mockToken({ type: 'tr_open' }),
+            mockToken({ type: 'th_open' }),
+            mockInlineToken([
+                mockToken({ type: 'strong_open' }),
+                mockTextToken('Bold'),
+                mockToken({ type: 'strong_close' }),
+            ]),
+            mockToken({ type: 'th_close' }),
+            mockToken({ type: 'tr_close' }),
+            mockToken({ type: 'thead_close' }),
+            mockToken({ type: 'tbody_open' }),
+            mockToken({ type: 'tbody_close' }),
+            mockToken({ type: 'table_close' }),
+        ];
         const { block } = transformTable(tokens, 0, deps);
         const attrs = block.attributes as unknown as TableAttrs;
 
@@ -169,11 +147,11 @@ describe('transformTable', () => {
     });
 
     it('startIndex がオフセットされていても正しく消費数を返す', () => {
-        const prefix = [
-            { type: 'paragraph_open' },
-            { type: 'inline' },
-            { type: 'paragraph_close' },
-        ] as unknown as Token[];
+        const prefix: Token[] = [
+            mockToken({ type: 'paragraph_open' }),
+            mockToken({ type: 'inline' }),
+            mockToken({ type: 'paragraph_close' }),
+        ];
         const tableTokens = fakeTableTokens(['H'], [['v']]);
         const tokens = [...prefix, ...tableTokens];
 

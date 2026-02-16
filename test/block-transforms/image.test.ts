@@ -7,40 +7,36 @@ import {
     transformImage,
     isImageOnly,
 } from '../../lib/block-transforms/image.js';
+import {
+    mockToken,
+    mockTextToken,
+    mockInlineToken,
+} from '../helpers/mock-token.js';
 
 const deps = { createBlock };
 
 /** 画像トークンのモック */
 function fakeImageToken(src: string, altText: string, title: string): Token {
-    const attrs: string[][] = [
+    const attrs: [string, string][] = [
         ['src', src],
         ['alt', ''],
-        ...(title ? [['title', title]] : []),
+        ...(title ? ([['title', title]] as [string, string][]) : []),
     ];
-    return {
+    return mockToken({
         type: 'image',
         attrs,
-        attrGet(key: string) {
-            const pair = attrs.find((a) => a[0] === key);
-            return pair ? pair[1] : null;
-        },
-        children: [{ type: 'text', content: altText }],
-    } as unknown as Token;
+        children: [mockTextToken(altText)],
+    });
 }
 
 /** 画像のみの inline トークンを生成 */
-function fakeImageInline(src: string, altText = '', title = ''): Token {
-    return {
-        type: 'inline',
-        children: [fakeImageToken(src, altText, title)],
-    } as unknown as Token;
+function fakeImageInline(src: string, altText = '', title = '') {
+    return mockInlineToken([fakeImageToken(src, altText, title)]);
 }
 
 describe('isImageOnly', () => {
     it('画像のみの children → true', () => {
-        const children = [
-            fakeImageToken('img.jpg', 'alt', ''),
-        ] as unknown as Token[];
+        const children = [fakeImageToken('img.jpg', 'alt', '')];
         expect(isImageOnly(children)).toBe(true);
     });
 
@@ -51,25 +47,25 @@ describe('isImageOnly', () => {
 
     it('テキスト混在の children → false', () => {
         const children = [
-            { type: 'text', content: 'Before ' },
+            mockTextToken('Before '),
             fakeImageToken('img.jpg', 'alt', ''),
-        ] as unknown as Token[];
+        ];
         expect(isImageOnly(children)).toBe(false);
     });
 
     it('空白テキスト + 画像 → true', () => {
         const children = [
-            { type: 'text', content: '  ' },
+            mockToken({ type: 'text', content: '  ' }),
             fakeImageToken('img.jpg', 'alt', ''),
-        ] as unknown as Token[];
+        ];
         expect(isImageOnly(children)).toBe(true);
     });
 
     it('softbreak + 画像 → true', () => {
         const children = [
             fakeImageToken('img.jpg', 'alt', ''),
-            { type: 'softbreak' },
-        ] as unknown as Token[];
+            mockToken({ type: 'softbreak' }),
+        ];
         expect(isImageOnly(children)).toBe(true);
     });
 });
@@ -110,24 +106,16 @@ describe('transformImage', () => {
     });
 
     it('alt テキストが空の場合', () => {
-        const imageAttrs: string[][] = [
-            ['src', 'img.jpg'],
-            ['alt', ''],
-        ];
-        const inline = {
-            type: 'inline',
-            children: [
-                {
-                    type: 'image',
-                    attrs: imageAttrs,
-                    attrGet(key: string) {
-                        const pair = imageAttrs.find((a) => a[0] === key);
-                        return pair ? pair[1] : null;
-                    },
-                    children: [],
-                },
-            ],
-        } as unknown as Token;
+        const inline = mockInlineToken([
+            mockToken({
+                type: 'image',
+                attrs: [
+                    ['src', 'img.jpg'],
+                    ['alt', ''],
+                ],
+                children: [],
+            }),
+        ]);
         const block = transformImage(inline, deps);
 
         expect(block.attributes.alt).toBe('');

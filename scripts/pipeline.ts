@@ -11,7 +11,6 @@
  */
 
 import { dirname } from 'node:path';
-import type { SpawnSyncReturns } from 'node:child_process';
 import { spawnSync } from 'node:child_process';
 import {
     extractFlag,
@@ -21,9 +20,9 @@ import {
 } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
 
-const projectRoot: string = resolveProjectRoot(import.meta.url);
+const projectRoot = resolveProjectRoot(import.meta.url);
 
-const args: string[] = process.argv.slice(2);
+const args = process.argv.slice(2);
 const { enabled: forceUpload, rest: argsWithoutForceUpload } = extractFlag(
     args,
     '--force-upload',
@@ -52,11 +51,11 @@ const { value: contentRoot, absPath: contentRootAbsPath } = resolveContentRoot({
     projectRoot,
     cliValue: cliContentRoot,
 });
-const commonArgs: string[] = ['--content-root', contentRoot];
-const markdownInput: string = articleInput.endsWith('.md')
+const commonArgs = ['--content-root', contentRoot];
+const markdownInput = articleInput.endsWith('.md')
     ? resolveArticleMarkdownPath(articleInput, { contentRootAbsPath })
     : articleInput;
-const uploadInput: string = articleInput.endsWith('.md')
+const uploadInput = articleInput.endsWith('.md')
     ? dirname(markdownInput)
     : articleInput;
 
@@ -67,7 +66,7 @@ try {
         false,
     );
 
-    const uploadArgs: string[] = [
+    const uploadArgs = [
         'dist/scripts/upload-media.js',
         ...commonArgs,
         uploadInput,
@@ -96,17 +95,13 @@ function runStep(
     inheritOutput: boolean,
 ): void {
     console.log(`\n▶ ${label} 実行中...`);
-    const result: SpawnSyncReturns<string> = spawnSync(
-        process.execPath,
-        scriptArgs,
-        {
-            cwd: projectRoot,
-            // convert 成功時はブロックHTMLが大量出力されるため抑制し、失敗時のみ表示する。
-            stdio: inheritOutput ? 'inherit' : ['ignore', 'pipe', 'pipe'],
-            env: process.env,
-            encoding: 'utf-8',
-        },
-    );
+    const result = spawnSync(process.execPath, scriptArgs, {
+        cwd: projectRoot,
+        // convert 成功時はブロックHTMLが大量出力されるため抑制し、失敗時のみ表示する。
+        stdio: inheritOutput ? 'inherit' : ['ignore', 'pipe', 'pipe'],
+        env: process.env,
+        encoding: 'utf-8',
+    });
 
     if (result.status !== 0) {
         if (!inheritOutput) {

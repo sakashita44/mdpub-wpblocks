@@ -5,12 +5,17 @@ import { renderInline } from '../../lib/inline-format.js';
 import { parseMd } from '../../lib/md-parser.js';
 import { transformTokens } from '../../lib/block-transforms/index.js';
 import { transformList } from '../../lib/block-transforms/list.js';
+import {
+    mockToken,
+    mockTextToken,
+    mockInlineToken,
+} from '../helpers/mock-token.js';
 
 const deps = { createBlock, renderInline };
 
 /** inline トークンを生成 */
 function fakeInline(text: string) {
-    return { type: 'inline', children: [{ type: 'text', content: text }] };
+    return mockInlineToken([mockTextToken(text)]);
 }
 
 /**
@@ -26,30 +31,22 @@ function fakeListTokens(
 ): Token[] {
     const openType = `${type}_list_open`;
     const closeType = `${type}_list_close`;
-    const tokens: object[] = [];
+    const tokens: Token[] = [];
 
-    const openToken: {
-        type: string;
-        attrs: string[][] | null;
-        attrGet: (k: string) => string | null;
-    } = { type: openType, attrs: null, attrGet: () => null };
-    if (type === 'ordered' && start != null) {
-        openToken.attrs = [['start', String(start)]];
-        openToken.attrGet = (k: string) =>
-            k === 'start' ? String(start) : null;
-    }
-    tokens.push(openToken);
+    const openAttrs: [string, string][] | null =
+        type === 'ordered' && start != null ? [['start', String(start)]] : null;
+    tokens.push(mockToken({ type: openType, attrs: openAttrs }));
 
     for (const item of items) {
-        tokens.push({ type: 'list_item_open' });
-        tokens.push({ type: 'paragraph_open', hidden: true });
+        tokens.push(mockToken({ type: 'list_item_open' }));
+        tokens.push(mockToken({ type: 'paragraph_open', hidden: true }));
         tokens.push(fakeInline(item));
-        tokens.push({ type: 'paragraph_close', hidden: true });
-        tokens.push({ type: 'list_item_close' });
+        tokens.push(mockToken({ type: 'paragraph_close', hidden: true }));
+        tokens.push(mockToken({ type: 'list_item_close' }));
     }
 
-    tokens.push({ type: closeType });
-    return tokens as unknown as Token[];
+    tokens.push(mockToken({ type: closeType }));
+    return tokens;
 }
 
 describe('transformList', () => {
@@ -94,33 +91,33 @@ describe('transformList', () => {
         //   - nested1
         //   - nested2
         // - item2
-        const tokens = [
-            { type: 'bullet_list_open', attrs: null, attrGet: () => null },
-            { type: 'list_item_open' },
-            { type: 'paragraph_open', hidden: true },
+        const tokens: Token[] = [
+            mockToken({ type: 'bullet_list_open' }),
+            mockToken({ type: 'list_item_open' }),
+            mockToken({ type: 'paragraph_open', hidden: true }),
             fakeInline('item1'),
-            { type: 'paragraph_close', hidden: true },
+            mockToken({ type: 'paragraph_close', hidden: true }),
             // ネストされたリスト
-            { type: 'bullet_list_open', attrs: null, attrGet: () => null },
-            { type: 'list_item_open' },
-            { type: 'paragraph_open', hidden: true },
+            mockToken({ type: 'bullet_list_open' }),
+            mockToken({ type: 'list_item_open' }),
+            mockToken({ type: 'paragraph_open', hidden: true }),
             fakeInline('nested1'),
-            { type: 'paragraph_close', hidden: true },
-            { type: 'list_item_close' },
-            { type: 'list_item_open' },
-            { type: 'paragraph_open', hidden: true },
+            mockToken({ type: 'paragraph_close', hidden: true }),
+            mockToken({ type: 'list_item_close' }),
+            mockToken({ type: 'list_item_open' }),
+            mockToken({ type: 'paragraph_open', hidden: true }),
             fakeInline('nested2'),
-            { type: 'paragraph_close', hidden: true },
-            { type: 'list_item_close' },
-            { type: 'bullet_list_close' },
-            { type: 'list_item_close' },
-            { type: 'list_item_open' },
-            { type: 'paragraph_open', hidden: true },
+            mockToken({ type: 'paragraph_close', hidden: true }),
+            mockToken({ type: 'list_item_close' }),
+            mockToken({ type: 'bullet_list_close' }),
+            mockToken({ type: 'list_item_close' }),
+            mockToken({ type: 'list_item_open' }),
+            mockToken({ type: 'paragraph_open', hidden: true }),
             fakeInline('item2'),
-            { type: 'paragraph_close', hidden: true },
-            { type: 'list_item_close' },
-            { type: 'bullet_list_close' },
-        ] as unknown as Token[];
+            mockToken({ type: 'paragraph_close', hidden: true }),
+            mockToken({ type: 'list_item_close' }),
+            mockToken({ type: 'bullet_list_close' }),
+        ];
 
         const { block, consumed } = transformList(tokens, 0, deps);
 
@@ -146,26 +143,23 @@ describe('transformList', () => {
     });
 
     it('インライン要素を含むリストアイテムを変換', () => {
-        const tokens = [
-            { type: 'bullet_list_open', attrs: null, attrGet: () => null },
-            { type: 'list_item_open' },
-            { type: 'paragraph_open', hidden: true },
-            {
-                type: 'inline',
-                children: [
-                    { type: 'text', content: 'Click ' },
-                    {
-                        type: 'link_open',
-                        attrGet: () => 'https://example.com',
-                    },
-                    { type: 'text', content: 'here' },
-                    { type: 'link_close' },
-                ],
-            },
-            { type: 'paragraph_close', hidden: true },
-            { type: 'list_item_close' },
-            { type: 'bullet_list_close' },
-        ] as unknown as Token[];
+        const tokens: Token[] = [
+            mockToken({ type: 'bullet_list_open' }),
+            mockToken({ type: 'list_item_open' }),
+            mockToken({ type: 'paragraph_open', hidden: true }),
+            mockInlineToken([
+                mockTextToken('Click '),
+                mockToken({
+                    type: 'link_open',
+                    attrs: [['href', 'https://example.com']],
+                }),
+                mockTextToken('here'),
+                mockToken({ type: 'link_close' }),
+            ]),
+            mockToken({ type: 'paragraph_close', hidden: true }),
+            mockToken({ type: 'list_item_close' }),
+            mockToken({ type: 'bullet_list_close' }),
+        ];
 
         const { block } = transformList(tokens, 0, deps);
         expect(String(block.innerBlocks[0].attributes.content)).toBe(

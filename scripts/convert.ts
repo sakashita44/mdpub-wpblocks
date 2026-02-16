@@ -16,7 +16,7 @@ import {
 } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
 
-const projectRoot: string = resolveProjectRoot(import.meta.url);
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 let cliContentRoot: string | undefined;
 let rest: string[];
@@ -43,7 +43,7 @@ const { absPath: contentRootAbsPath } = resolveContentRoot({
     cliValue: cliContentRoot,
 });
 
-const mdPath: string = resolveArticleMarkdownPath(articleInput, {
+const mdPath = resolveArticleMarkdownPath(articleInput, {
     contentRootAbsPath,
 });
 
@@ -52,10 +52,10 @@ if (!existsSync(mdPath)) {
     process.exit(1);
 }
 
-const markdownString: string = readFileSync(mdPath, 'utf-8');
+const markdownString = readFileSync(mdPath, 'utf-8');
 const { tokens } = parseMd(markdownString);
 const blocks = transformTokens(tokens);
-const html: string = serialize(blocks);
+const html = serialize(blocks);
 
 console.log(html);
 // happy-dom の Window がイベントループを維持するため明示的に終了

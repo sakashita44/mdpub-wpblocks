@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
 import { existsSync, writeFileSync, readFileSync } from 'node:fs';
-import type { SpawnSyncReturns } from 'node:child_process';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { resolveProjectRoot } from '../lib/project-root.js';
 
-const projectRoot: string = resolveProjectRoot(import.meta.url);
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 const subcommands = new Map<string, string>([
     ['convert', 'dist/scripts/convert.js'],
@@ -38,7 +37,7 @@ if (command === 'init') {
     process.exit(0);
 }
 
-const scriptPath: string | undefined = subcommands.get(command);
+const scriptPath = subcommands.get(command);
 if (!scriptPath) {
     console.error(`不明なサブコマンドです: ${command}`);
     console.error('');
@@ -46,7 +45,7 @@ if (!scriptPath) {
     process.exit(1);
 }
 
-const result: SpawnSyncReturns<Buffer> = spawnSync(
+const result = spawnSync(
     process.execPath,
     [resolve(projectRoot, scriptPath), ...args],
     {
@@ -59,8 +58,8 @@ const result: SpawnSyncReturns<Buffer> = spawnSync(
 process.exit(result.status ?? 1);
 
 function runInit(rootDir: string): void {
-    const envExamplePath: string = resolve(rootDir, '.env.example');
-    const configPath: string = resolve(rootDir, '.mdpub-wpblocks.json');
+    const envExamplePath = resolve(rootDir, '.env.example');
+    const configPath = resolve(rootDir, '.mdpub-wpblocks.json');
 
     const created: string[] = [];
     const skipped: string[] = [];
@@ -134,7 +133,7 @@ function printVersion(): void {
 }
 
 function printHelp(stream: NodeJS.WritableStream = process.stdout): void {
-    const text: string = [
+    const text = [
         'mdpub - Markdown to WordPress CLI',
         '',
         '使い方:',

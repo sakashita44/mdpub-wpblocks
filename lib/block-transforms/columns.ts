@@ -29,7 +29,7 @@ export function transformColumns(
                 inlineToken?.type === 'inline' &&
                 isImageOnly(inlineToken.children)
             ) {
-                const imageTokens = inlineToken.children!.filter(
+                const imageTokens = (inlineToken.children ?? []).filter(
                     (child: Token) => child.type === 'image',
                 );
 

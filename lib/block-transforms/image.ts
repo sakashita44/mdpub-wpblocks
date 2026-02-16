@@ -70,8 +70,11 @@ export function transformImage(
     inlineToken: Token,
     { createBlock }: Pick<TransformDeps, 'createBlock'>,
 ): Block {
-    const imageToken = inlineToken.children!.find(
+    const imageToken = (inlineToken.children ?? []).find(
         (c: Token) => c.type === 'image',
-    )!;
+    );
+    if (!imageToken) {
+        throw new Error('inline トークン内に image トークンが見つかりません');
+    }
     return transformImageToken(imageToken, { createBlock });
 }

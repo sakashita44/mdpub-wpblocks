@@ -30,11 +30,10 @@ import type {
     WpClient,
     WpClientConfig,
     WpTerm,
-    WpMedia,
     Frontmatter,
 } from '../lib/types.js';
 
-const projectRoot: string = resolveProjectRoot(import.meta.url);
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 loadEnv(resolve(projectRoot, '.env'));
 
@@ -62,7 +61,7 @@ const { absPath: contentRootAbsPath } = resolveContentRoot({
     projectRoot,
     cliValue: cliContentRoot,
 });
-const absMdPath: string = resolveArticleMarkdownPath(articleInput, {
+const absMdPath = resolveArticleMarkdownPath(articleInput, {
     contentRootAbsPath,
 });
 if (!existsSync(absMdPath)) {
@@ -78,28 +77,21 @@ try {
     process.exit(1);
 }
 
-const markdownString: string = readFileSync(absMdPath, 'utf-8');
+const markdownString = readFileSync(absMdPath, 'utf-8');
 const { data: frontmatter, content: body } = matter(markdownString);
 
 try {
     validateFrontmatter(frontmatter);
 
     const articleSlug: string = frontmatter.slug;
-    const wp: WpClient = createWpClient(config);
+    const wp = createWpClient(config);
 
     const { tokens } = parseMd(body);
     const blocks = transformTokens(tokens);
-    const rawHtml: string = serialize(blocks);
+    const rawHtml = serialize(blocks);
 
-    const resolvedImageMap: Map<string, string> = await resolveImageUrlMap(
-        wp,
-        body,
-        articleSlug,
-    );
-    const contentHtml: string = replaceLocalImagePaths(
-        rawHtml,
-        resolvedImageMap,
-    );
+    const resolvedImageMap = await resolveImageUrlMap(wp, body, articleSlug);
+    const contentHtml = replaceLocalImagePaths(rawHtml, resolvedImageMap);
 
     const [categories, tags, featuredMediaId] = await Promise.all([
         resolveCategoryIds(wp, frontmatter.categories),
@@ -143,7 +135,7 @@ async function resolveCategoryIds(
     wp: WpClient,
     categorySlugs: string[],
 ): Promise<number[]> {
-    const categories: (WpTerm | null)[] = await Promise.all(
+    const categories = await Promise.all(
         categorySlugs.map((slug) => wp.findCategoryBySlug(slug)),
     );
 
@@ -155,14 +147,14 @@ async function resolveCategoryIds(
         }
     });
 
-    return categories.map((category) => category!.id);
+    return categories.filter((c): c is WpTerm => c !== null).map((c) => c.id);
 }
 
 async function resolveTagIds(
     wp: WpClient,
     tagSlugs: string[],
 ): Promise<number[]> {
-    const tags: (WpTerm | null)[] = await Promise.all(
+    const tags = await Promise.all(
         tagSlugs.map((slug) => wp.findTagBySlug(slug)),
     );
 
@@ -172,7 +164,7 @@ async function resolveTagIds(
         }
     });
 
-    return tags.map((tag) => tag!.id);
+    return tags.filter((t): t is WpTerm => t !== null).map((t) => t.id);
 }
 
 async function resolveFeaturedMediaId(
@@ -180,8 +172,8 @@ async function resolveFeaturedMediaId(
     featuredImagePath: string,
     articleSlug: string,
 ): Promise<number> {
-    const slug: string = expectedSlug(featuredImagePath, articleSlug);
-    const media: WpMedia | null = await wp.findMediaBySlug(slug);
+    const slug = expectedSlug(featuredImagePath, articleSlug);
+    const media = await wp.findMediaBySlug(slug);
     if (!media) {
         throw new Error(
             `featured_image のメディアが見つかりません: path=${featuredImagePath}, slug=${slug}`,
@@ -195,12 +187,12 @@ async function resolveImageUrlMap(
     markdownBody: string,
     articleSlug: string,
 ): Promise<Map<string, string>> {
-    const imagePaths: string[] = extractImagePaths(markdownBody);
+    const imagePaths = extractImagePaths(markdownBody);
     const map = new Map<string, string>();
 
     for (const imagePath of imagePaths) {
-        const slug: string = expectedSlug(imagePath, articleSlug);
-        const media: WpMedia | null = await wp.findMediaBySlug(slug);
+        const slug = expectedSlug(imagePath, articleSlug);
+        const media = await wp.findMediaBySlug(slug);
         if (!media || !media.source_url) {
             throw new Error(
                 `本文画像のメディア URL が取得できません: path=${imagePath}, slug=${slug}`,

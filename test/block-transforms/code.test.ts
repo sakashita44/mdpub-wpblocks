@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import type Token from 'markdown-it/lib/token.mjs';
 import { createBlock } from '../../lib/wp-env.js';
 import { transformCode } from '../../lib/block-transforms/code.js';
+import { mockToken } from '../helpers/mock-token.js';
 
 const deps = { createBlock };
 
 /** fence トークンのモック */
-function fakeFence(content: string, info = ''): Token {
-    return { type: 'fence', content, info } as unknown as Token;
+function fakeFence(content: string, info = '') {
+    return mockToken({ type: 'fence', content, info });
 }
 
 describe('transformCode', () => {

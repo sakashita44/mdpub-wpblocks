@@ -9,10 +9,7 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
-        "isolatedModules": true,
-        "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true
+        "isolatedModules": true
     },
     "include": [
         "lib/**/*.ts",

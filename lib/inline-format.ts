@@ -29,7 +29,7 @@ function renderTextWithInlineMath(text: string): string {
             parts.push(`[katex]${expr}[/katex]`);
         }
 
-        lastIndex = match.index! + match[0].length;
+        lastIndex = (match.index ?? 0) + match[0].length;
     }
 
     const tail = text.slice(lastIndex).replaceAll('\\$', '$');

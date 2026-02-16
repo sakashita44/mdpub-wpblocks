@@ -24,15 +24,15 @@ import {
     resolveArticleDirPath,
 } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
-import type { WpClient, WpClientConfig, WpMedia } from '../lib/types.js';
+import type { WpClientConfig } from '../lib/types.js';
 
-const projectRoot: string = resolveProjectRoot(import.meta.url);
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 // .env 読み込み
 loadEnv(resolve(projectRoot, '.env'));
 
 // --- 引数パース ---
-const args: string[] = process.argv.slice(2);
+const args = process.argv.slice(2);
 const { enabled: forceUpload, rest: argsWithoutForceUpload } = extractFlag(
     args,
     '--force-upload',
@@ -61,10 +61,10 @@ const { absPath: contentRootAbsPath } = resolveContentRoot({
     projectRoot,
     cliValue: cliContentRoot,
 });
-const absArticleDir: string = resolveArticleDirPath(articleInput, {
+const absArticleDir = resolveArticleDirPath(articleInput, {
     contentRootAbsPath,
 });
-const indexMd: string = join(absArticleDir, 'index.md');
+const indexMd = join(absArticleDir, 'index.md');
 
 if (!existsSync(indexMd)) {
     console.error(
@@ -75,7 +75,7 @@ if (!existsSync(indexMd)) {
 }
 
 // --- Frontmatter から slug 取得 ---
-const mdContent: string = readFileSync(indexMd, 'utf-8');
+const mdContent = readFileSync(indexMd, 'utf-8');
 const { data: frontmatter, content: body } = matter(mdContent);
 const articleSlug: string | undefined = frontmatter.slug;
 
@@ -95,7 +95,7 @@ interface ImageEntry {
 const images: ImageEntry[] = [];
 
 // MD 本文から画像パスを抽出
-const imagePaths: string[] = extractImagePaths(body);
+const imagePaths = extractImagePaths(body);
 
 // featured_image も含める
 if (frontmatter.featured_image) {
@@ -106,7 +106,7 @@ if (frontmatter.featured_image) {
 }
 
 for (const imgPath of imagePaths) {
-    const absPath: string = resolveImagePath(imgPath, absArticleDir);
+    const absPath = resolveImagePath(imgPath, absArticleDir);
     if (!existsSync(absPath)) {
         console.warn(`⚠ 画像ファイルが見つかりません（スキップ）: ${imgPath}`);
         continue;
@@ -133,7 +133,7 @@ try {
     process.exit(1);
 }
 
-const wp: WpClient = createWpClient(config);
+const wp = createWpClient(config);
 
 // --- アップロード実行 ---
 console.log(`\n📁 記事: ${articleSlug}`);
@@ -151,7 +151,7 @@ for (const img of images) {
     const label = `  ${img.localPath} → ${img.uploadName}`;
     try {
         // 既存チェック
-        const existing: WpMedia | null = await wp.findMediaBySlug(img.slug);
+        const existing = await wp.findMediaBySlug(img.slug);
 
         if (existing && !forceUpload) {
             console.log(`${label} … ⏭ スキップ（既存 id:${existing.id}）`);
@@ -167,10 +167,7 @@ for (const img of images) {
 
         // アップロード
         console.log(`${label} … ⬆ アップロード中...`);
-        const result: WpMedia = await wp.uploadMedia(
-            img.absPath,
-            img.uploadName,
-        );
+        const result = await wp.uploadMedia(img.absPath, img.uploadName);
 
         // slug 検証
         if (result.slug !== img.slug) {

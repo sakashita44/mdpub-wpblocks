@@ -81,7 +81,7 @@ export function transformTokens(tokens: Token[]): Block[] {
                 }
 
                 if (isImageOnly(inlineToken.children)) {
-                    const imageTokens = inlineToken.children!.filter(
+                    const imageTokens = (inlineToken.children ?? []).filter(
                         (c: Token) => c.type === 'image',
                     );
                     if (imageTokens.length === 1) {

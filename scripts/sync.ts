@@ -8,14 +8,9 @@ import { stringify as stringifyYaml } from 'yaml';
 import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.js';
 import { extractOption, resolveContentRoot } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
-import type {
-    WpClient,
-    WpClientConfig,
-    WpPost,
-    WpMedia,
-} from '../lib/types.js';
+import type { WpClientConfig, WpPost, WpMedia } from '../lib/types.js';
 
-const projectRoot: string = resolveProjectRoot(import.meta.url);
+const projectRoot = resolveProjectRoot(import.meta.url);
 
 loadEnv(resolve(projectRoot, '.env'));
 
@@ -42,7 +37,7 @@ async function main(): Promise<void> {
         process.exit(1);
     }
 
-    const output: string = resolve(projectRoot, outputPath || '.registry.yaml');
+    const output = resolve(projectRoot, outputPath || '.registry.yaml');
     const { value: contentRoot } = resolveContentRoot({
         projectRoot,
         cliValue: cliContentRoot,
@@ -57,8 +52,8 @@ async function main(): Promise<void> {
     }
 
     try {
-        const wp: WpClient = createWpClient(config);
-        const [posts, media]: [WpPost[], WpMedia[]] = await Promise.all([
+        const wp = createWpClient(config);
+        const [posts, media] = await Promise.all([
             fetchAll<WpPost>((page, perPage) =>
                 wp.listPostsPage(page, perPage),
             ),

@@ -11,6 +11,8 @@ import type Token from 'markdown-it/lib/token.mjs';
 import markdownItContainer from 'markdown-it-container';
 import type { Frontmatter } from './types.js';
 
+// MarkdownIt() のオーバーロードが PresetName | Options のユニオンのため、
+// オブジェクトリテラルだけでは Options に推論されず as Options が必要
 const md = new MarkdownIt({
     // Issue #5 で html_block / html_inline トークンを処理するための先行設定
     html: true,

@@ -1,22 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import type Token from 'markdown-it/lib/token.mjs';
 import { createBlock } from '../../lib/wp-env.js';
 import { renderInline } from '../../lib/inline-format.js';
 import { transformHeading } from '../../lib/block-transforms/heading.js';
+import {
+    mockToken,
+    mockTextToken,
+    mockInlineToken,
+} from '../helpers/mock-token.js';
 
 const deps = { createBlock, renderInline };
 
 /** heading_open トークンのモック */
-function fakeHeadingOpen(level: number): Token {
-    return { type: 'heading_open', tag: `h${level}` } as unknown as Token;
+function fakeHeadingOpen(level: number) {
+    return mockToken({ type: 'heading_open', tag: `h${level}` });
 }
 
 /** inline トークンのモック（children にテキストトークンを持つ） */
-function fakeInline(text: string): Token {
-    return {
-        type: 'inline',
-        children: [{ type: 'text', content: text }],
-    } as unknown as Token;
+function fakeInline(text: string) {
+    return mockInlineToken([mockTextToken(text)]);
 }
 
 describe('transformHeading', () => {
@@ -50,15 +51,12 @@ describe('transformHeading', () => {
     });
 
     it('インライン要素を含む見出しを変換', () => {
-        const inlineToken = {
-            type: 'inline',
-            children: [
-                { type: 'text', content: 'Hello ' },
-                { type: 'strong_open' },
-                { type: 'text', content: 'World' },
-                { type: 'strong_close' },
-            ],
-        } as unknown as Token;
+        const inlineToken = mockInlineToken([
+            mockTextToken('Hello '),
+            mockToken({ type: 'strong_open' }),
+            mockTextToken('World'),
+            mockToken({ type: 'strong_close' }),
+        ]);
         const block = transformHeading(fakeHeadingOpen(2), inlineToken, deps);
         expect(String(block.attributes.content)).toBe(
             'Hello <strong>World</strong>',

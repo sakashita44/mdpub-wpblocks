@@ -305,7 +305,7 @@ export function getWpConfig(): WpClientConfig {
     if (!wpUser) missing.push('WP_USER');
     if (!wpAppPassword) missing.push('WP_APP_PASSWORD');
 
-    if (missing.length > 0) {
+    if (missing.length > 0 || !wpUrl || !wpUser || !wpAppPassword) {
         throw new Error(
             `環境変数が未設定です: ${missing.join(', ')}\n` +
                 `必要な環境変数: WP_URL, WP_USER, WP_APP_PASSWORD\n` +
@@ -313,5 +313,5 @@ export function getWpConfig(): WpClientConfig {
         );
     }
 
-    return { wpUrl: wpUrl!, wpUser: wpUser!, wpAppPassword: wpAppPassword! };
+    return { wpUrl, wpUser, wpAppPassword };
 }
