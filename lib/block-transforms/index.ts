@@ -44,21 +44,18 @@ const CONSUMED_TOKEN_TYPES = new Set([
     'container_columns_close',
 ]);
 
-/** 有効プラグインを設定する。スクリプトから呼び出す。 */
-let activePlugins: Set<string> = new Set();
-export function setPlugins(plugins: Set<string>): void {
-    activePlugins = plugins;
-}
-
 /** markdown-it トークン配列を Gutenberg ブロック配列に変換 */
-export function transformTokens(tokens: Token[]): Block[] {
+export function transformTokens(
+    tokens: Token[],
+    plugins: Set<string>,
+): Block[] {
     const renderInline = (children: Token[] | null): string =>
-        renderInlineBase(children, activePlugins);
+        renderInlineBase(children, plugins);
 
     const deps: TransformDeps = {
         createBlock,
         renderInline,
-        plugins: activePlugins,
+        plugins,
     };
 
     const blocks: Block[] = [];
@@ -80,7 +77,7 @@ export function transformTokens(tokens: Token[]): Block[] {
                 const inlineToken = tokens[i + 1];
 
                 // KaTeX プラグインが有効な場合のみディスプレイ数式を変換
-                if (activePlugins.has('katex')) {
+                if (plugins.has('katex')) {
                     const displayMath = extractDisplayMath(inlineToken);
                     if (displayMath) {
                         blocks.push(transformDisplayMath(displayMath, deps));

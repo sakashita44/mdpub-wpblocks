@@ -31,7 +31,19 @@ async function main(): Promise<void> {
     }
 
     const wp = createWpClient(config);
-    const wpPlugins = await wp.listPlugins();
+
+    let wpPlugins;
+    try {
+        wpPlugins = await wp.listPlugins();
+    } catch (e) {
+        const msg = (e as Error).message || '';
+        if (/403|401|Forbidden|Unauthorized/i.test(msg)) {
+            console.error(
+                'プラグイン一覧の取得に失敗しました。WordPress の Application Password に管理者権限があるか確認してください。',
+            );
+        }
+        throw e;
+    }
     const mdpubPlugins = mapWpPlugins(wpPlugins);
 
     const cache: MdpubCache = {
@@ -44,5 +56,4 @@ async function main(): Promise<void> {
     console.log(
         `✅ ${outputPath} を生成しました（plugins: ${mdpubPlugins.size}）`,
     );
-    process.exit(0);
 }

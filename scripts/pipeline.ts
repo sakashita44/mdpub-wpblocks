@@ -5,9 +5,10 @@
  *   node dist/scripts/pipeline.js [--content-root <path>] [--force-upload] <article-slug|path>
  *
  * 実行順:
- *   1) convert（変換確認）
- *   2) upload-media（メディア同期）
- *   3) publish（投稿）
+ *   1) sync（プラグイン情報取得）
+ *   2) convert（変換確認）
+ *   3) upload-media（メディア同期）
+ *   4) publish（投稿）
  */
 
 import { dirname } from 'node:path';

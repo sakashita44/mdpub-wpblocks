@@ -7,14 +7,14 @@ const noPlugins = new Set<string>();
 
 describe('renderInline', () => {
     it('null / 空配列で空文字を返す', () => {
-        expect(renderInline(null)).toBe('');
-        expect(renderInline([])).toBe('');
+        expect(renderInline(null, noPlugins)).toBe('');
+        expect(renderInline([], noPlugins)).toBe('');
     });
 
     it('プレーンテキストをエスケープして返す', () => {
-        expect(renderInline([mockTextToken('Hello & "world"')])).toBe(
-            'Hello &amp; &quot;world&quot;',
-        );
+        expect(
+            renderInline([mockTextToken('Hello & "world"')], noPlugins),
+        ).toBe('Hello &amp; &quot;world&quot;');
     });
 
     it('strong タグで囲む', () => {
@@ -23,7 +23,7 @@ describe('renderInline', () => {
             mockTextToken('bold'),
             mockToken({ type: 'strong_close' }),
         ];
-        expect(renderInline(tokens)).toBe('<strong>bold</strong>');
+        expect(renderInline(tokens, noPlugins)).toBe('<strong>bold</strong>');
     });
 
     it('em タグで囲む', () => {
@@ -32,12 +32,14 @@ describe('renderInline', () => {
             mockTextToken('italic'),
             mockToken({ type: 'em_close' }),
         ];
-        expect(renderInline(tokens)).toBe('<em>italic</em>');
+        expect(renderInline(tokens, noPlugins)).toBe('<em>italic</em>');
     });
 
     it('code_inline をエスケープ付きで変換', () => {
         const tokens = [mockToken({ type: 'code_inline', content: '<div>' })];
-        expect(renderInline(tokens)).toBe('<code>&lt;div&gt;</code>');
+        expect(renderInline(tokens, noPlugins)).toBe(
+            '<code>&lt;div&gt;</code>',
+        );
     });
 
     it('s（strikethrough）タグで囲む', () => {
@@ -46,7 +48,7 @@ describe('renderInline', () => {
             mockTextToken('deleted'),
             mockToken({ type: 's_close' }),
         ];
-        expect(renderInline(tokens)).toBe('<s>deleted</s>');
+        expect(renderInline(tokens, noPlugins)).toBe('<s>deleted</s>');
     });
 
     it('softbreak を改行に変換', () => {
@@ -55,7 +57,7 @@ describe('renderInline', () => {
             mockToken({ type: 'softbreak' }),
             mockTextToken('line2'),
         ];
-        expect(renderInline(tokens)).toBe('line1\nline2');
+        expect(renderInline(tokens, noPlugins)).toBe('line1\nline2');
     });
 
     it('hardbreak を <br> に変換', () => {
@@ -64,7 +66,7 @@ describe('renderInline', () => {
             mockToken({ type: 'hardbreak' }),
             mockTextToken('line2'),
         ];
-        expect(renderInline(tokens)).toBe('line1<br>line2');
+        expect(renderInline(tokens, noPlugins)).toBe('line1<br>line2');
     });
 
     describe('link', () => {
@@ -77,7 +79,7 @@ describe('renderInline', () => {
                 mockTextToken('Example'),
                 mockToken({ type: 'link_close' }),
             ];
-            expect(renderInline(tokens)).toBe(
+            expect(renderInline(tokens, noPlugins)).toBe(
                 '<a href="https://example.com">Example</a>',
             );
         });
@@ -91,7 +93,7 @@ describe('renderInline', () => {
                 mockTextToken('mail'),
                 mockToken({ type: 'link_close' }),
             ];
-            expect(renderInline(tokens)).toBe(
+            expect(renderInline(tokens, noPlugins)).toBe(
                 '<a href="mailto:test@example.com">mail</a>',
             );
         });
@@ -105,7 +107,7 @@ describe('renderInline', () => {
                 mockTextToken('link'),
                 mockToken({ type: 'link_close' }),
             ];
-            expect(renderInline(tokens)).toBe(
+            expect(renderInline(tokens, noPlugins)).toBe(
                 '<a href="/path/to/page">link</a>',
             );
         });
@@ -119,7 +121,9 @@ describe('renderInline', () => {
                 mockTextToken('anchor'),
                 mockToken({ type: 'link_close' }),
             ];
-            expect(renderInline(tokens)).toBe('<a href="#section">anchor</a>');
+            expect(renderInline(tokens, noPlugins)).toBe(
+                '<a href="#section">anchor</a>',
+            );
         });
 
         it('javascript: スキームを空文字に置換（XSS 防御）', () => {
@@ -131,7 +135,7 @@ describe('renderInline', () => {
                 mockTextToken('xss'),
                 mockToken({ type: 'link_close' }),
             ];
-            expect(renderInline(tokens)).toBe('<a href="">xss</a>');
+            expect(renderInline(tokens, noPlugins)).toBe('<a href="">xss</a>');
         });
 
         it('data: スキームを空文字に置換', () => {
@@ -143,7 +147,7 @@ describe('renderInline', () => {
                 mockTextToken('data'),
                 mockToken({ type: 'link_close' }),
             ];
-            expect(renderInline(tokens)).toBe('<a href="">data</a>');
+            expect(renderInline(tokens, noPlugins)).toBe('<a href="">data</a>');
         });
 
         it('href 内の & をエスケープ', () => {
@@ -155,7 +159,7 @@ describe('renderInline', () => {
                 mockTextToken('link'),
                 mockToken({ type: 'link_close' }),
             ];
-            expect(renderInline(tokens)).toBe(
+            expect(renderInline(tokens, noPlugins)).toBe(
                 '<a href="https://example.com?a=1&amp;b=2">link</a>',
             );
         });
@@ -172,7 +176,7 @@ describe('renderInline', () => {
             mockTextToken('italic'),
             mockToken({ type: 'em_close' }),
         ];
-        expect(renderInline(tokens)).toBe(
+        expect(renderInline(tokens, noPlugins)).toBe(
             'Hello <strong>bold</strong> and <em>italic</em>',
         );
     });
@@ -215,7 +219,7 @@ describe('renderInline', () => {
             }),
             mockTextToken(' after'),
         ];
-        expect(renderInline(tokens)).toBe(
+        expect(renderInline(tokens, noPlugins)).toBe(
             'before <span class="x">ok</span> after',
         );
     });

@@ -70,7 +70,7 @@ export interface ApiFetchResult<T> {
 /** WordPress プラグインオブジェクト（`GET /wp/v2/plugins` レスポンスの部分型） */
 export interface WpPlugin {
     plugin: string;
-    status: string;
+    status: 'active' | 'inactive' | 'network-active';
     name: string;
 }
 

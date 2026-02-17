@@ -8,7 +8,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { serialize, cleanupWpEnv } from '../lib/wp-env.js';
 import { parseMd } from '../lib/md-parser.js';
-import { transformTokens, setPlugins } from '../lib/block-transforms/index.js';
+import { transformTokens } from '../lib/block-transforms/index.js';
 import {
     extractOption,
     resolveContentRoot,
@@ -53,11 +53,11 @@ if (!existsSync(mdPath)) {
     process.exit(1);
 }
 
-setPlugins(loadPlugins(projectRoot));
+const plugins = loadPlugins(projectRoot);
 
 const markdownString = readFileSync(mdPath, 'utf-8');
 const { tokens } = parseMd(markdownString);
-const blocks = transformTokens(tokens);
+const blocks = transformTokens(tokens, plugins);
 const html = serialize(blocks);
 
 console.log(html);

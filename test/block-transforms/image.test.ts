@@ -125,7 +125,7 @@ describe('transformImage', () => {
 describe('transformTokens (image paragraph)', () => {
     it('同一段落に画像が複数ある場合は画像数分の core/image を生成', () => {
         const { tokens } = parseMd('![a](img/a.jpg) ![b](img/b.jpg)');
-        const blocks = transformTokens(tokens);
+        const blocks = transformTokens(tokens, new Set());
 
         expect(blocks).toHaveLength(2);
         expect(blocks[0].name).toBe('core/image');

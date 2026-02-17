@@ -10,7 +10,7 @@ import type { Block } from '@wordpress/blocks';
 import type { TransformDeps } from '../types.js';
 import { escapeHtml } from '../html-utils.js';
 
-export const INLINE_MATH_PATTERN = /(?<!\\)(?<!\$)\$(?!\$)([^\n$]+?)\$(?!\$)/g;
+const INLINE_MATH_PATTERN = /(?<!\\)(?<!\$)\$(?!\$)([^\n$]+?)\$(?!\$)/g;
 
 export const DISPLAY_MATH_PATTERN = /^\$\$([\s\S]*?)\$\$$/;
 

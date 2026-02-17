@@ -12,7 +12,7 @@ import { renderTextWithInlineMath } from './plugins/katex.js';
 /** インライントークン配列を HTML 文字列に変換 */
 export function renderInline(
     children: Token[] | null,
-    plugins: Set<string> = new Set(),
+    plugins: Set<string>,
 ): string {
     if (!children || children.length === 0) return '';
 
