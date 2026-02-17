@@ -10,19 +10,17 @@ import type { Block } from '@wordpress/blocks';
 import type { TransformDeps } from '../types.js';
 
 import { createBlock } from '../wp-env.js';
-import { renderInline } from '../inline-format.js';
+import { renderInline as renderInlineBase } from '../inline-format.js';
 import { transformParagraph } from './paragraph.js';
 import { transformHeading } from './heading.js';
 import { transformCode } from './code.js';
 import { transformTable } from './table.js';
 import { transformList } from './list.js';
 import { transformImage, transformImageToken, isImageOnly } from './image.js';
-import { extractDisplayMath, transformDisplayMath } from './math.js';
+import { extractDisplayMath, transformDisplayMath } from '../plugins/katex.js';
 import { extractStandaloneUrl, transformEmbed } from './embed.js';
 import { transformHtml } from './html.js';
 import { transformColumns } from './columns.js';
-
-const deps: TransformDeps = { createBlock, renderInline };
 
 // switch case で消費済みのためスキップすべきトークン
 const CONSUMED_TOKEN_TYPES = new Set([
@@ -46,8 +44,23 @@ const CONSUMED_TOKEN_TYPES = new Set([
     'container_columns_close',
 ]);
 
+/** 有効プラグインを設定する。スクリプトから呼び出す。 */
+let activePlugins: Set<string> = new Set();
+export function setPlugins(plugins: Set<string>): void {
+    activePlugins = plugins;
+}
+
 /** markdown-it トークン配列を Gutenberg ブロック配列に変換 */
 export function transformTokens(tokens: Token[]): Block[] {
+    const renderInline = (children: Token[] | null): string =>
+        renderInlineBase(children, activePlugins);
+
+    const deps: TransformDeps = {
+        createBlock,
+        renderInline,
+        plugins: activePlugins,
+    };
+
     const blocks: Block[] = [];
     let i = 0;
 
@@ -66,11 +79,14 @@ export function transformTokens(tokens: Token[]): Block[] {
                 }
                 const inlineToken = tokens[i + 1];
 
-                const displayMath = extractDisplayMath(inlineToken);
-                if (displayMath) {
-                    blocks.push(transformDisplayMath(displayMath, deps));
-                    i += 3;
-                    break;
+                // KaTeX プラグインが有効な場合のみディスプレイ数式を変換
+                if (activePlugins.has('katex')) {
+                    const displayMath = extractDisplayMath(inlineToken);
+                    if (displayMath) {
+                        blocks.push(transformDisplayMath(displayMath, deps));
+                        i += 3;
+                        break;
+                    }
                 }
 
                 const embedUrl = extractStandaloneUrl(inlineToken);

@@ -11,7 +11,8 @@ import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import matter from 'gray-matter';
 import { parseMd } from '../lib/md-parser.js';
-import { transformTokens } from '../lib/block-transforms/index.js';
+import { transformTokens, setPlugins } from '../lib/block-transforms/index.js';
+import { loadPlugins } from '../lib/plugins/config.js';
 import { serialize, cleanupWpEnv } from '../lib/wp-env.js';
 import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.js';
 import { expectedSlug, extractImagePaths } from '../lib/media-slug.js';
@@ -85,6 +86,8 @@ try {
 
     const articleSlug: string = frontmatter.slug;
     const wp = createWpClient(config);
+
+    setPlugins(loadPlugins(projectRoot));
 
     const { tokens } = parseMd(body);
     const blocks = transformTokens(tokens);

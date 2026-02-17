@@ -8,13 +8,14 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { serialize, cleanupWpEnv } from '../lib/wp-env.js';
 import { parseMd } from '../lib/md-parser.js';
-import { transformTokens } from '../lib/block-transforms/index.js';
+import { transformTokens, setPlugins } from '../lib/block-transforms/index.js';
 import {
     extractOption,
     resolveContentRoot,
     resolveArticleMarkdownPath,
 } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
+import { loadPlugins } from '../lib/plugins/config.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
@@ -51,6 +52,8 @@ if (!existsSync(mdPath)) {
     console.error(`エラー: ファイルが見つかりません: ${mdPath}`);
     process.exit(1);
 }
+
+setPlugins(loadPlugins(projectRoot));
 
 const markdownString = readFileSync(mdPath, 'utf-8');
 const { tokens } = parseMd(markdownString);

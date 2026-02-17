@@ -110,7 +110,9 @@ export function resolveArticleMarkdownPath(
     return resolve(contentRootAbsPath, input, 'index.md');
 }
 
-function loadProjectConfig(projectRoot: string): Record<string, unknown> {
+export function loadProjectConfig(
+    projectRoot: string,
+): Record<string, unknown> {
     const configPath = resolve(projectRoot, CONFIG_FILE);
     if (!existsSync(configPath)) {
         return {};

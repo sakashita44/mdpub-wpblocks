@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { renderInline } from '../lib/inline-format.js';
 import { mockToken, mockTextToken } from './helpers/mock-token.js';
 
+const katexPlugins = new Set(['katex']);
+const noPlugins = new Set<string>();
+
 describe('renderInline', () => {
     it('null / 空配列で空文字を返す', () => {
         expect(renderInline(null)).toBe('');
@@ -174,26 +177,33 @@ describe('renderInline', () => {
         );
     });
 
-    it('インライン数式を KaTeX ショートコードに変換', () => {
+    it('インライン数式を KaTeX ショートコードに変換（katex 有効時）', () => {
         const tokens = [mockTextToken('before $x^2$ after')];
-        expect(renderInline(tokens)).toBe('before [katex]x^2[/katex] after');
+        expect(renderInline(tokens, katexPlugins)).toBe(
+            'before [katex]x^2[/katex] after',
+        );
     });
 
-    it('1段落に複数のインライン数式を変換', () => {
+    it('1段落に複数のインライン数式を変換（katex 有効時）', () => {
         const tokens = [mockTextToken('$a$ and $b$')];
-        expect(renderInline(tokens)).toBe(
+        expect(renderInline(tokens, katexPlugins)).toBe(
             '[katex]a[/katex] and [katex]b[/katex]',
         );
     });
 
-    it('エスケープされた $ は通常文字として扱う', () => {
+    it('エスケープされた $ は通常文字として扱う（katex 有効時）', () => {
         const tokens = [mockTextToken('price is \\$10')];
-        expect(renderInline(tokens)).toBe('price is $10');
+        expect(renderInline(tokens, katexPlugins)).toBe('price is $10');
     });
 
-    it('display math 形式の $$...$$ はインライン数式として変換しない', () => {
+    it('display math 形式の $$...$$ はインライン数式として変換しない（katex 有効時）', () => {
         const tokens = [mockTextToken('see $$x^2$$ end')];
-        expect(renderInline(tokens)).toBe('see $$x^2$$ end');
+        expect(renderInline(tokens, katexPlugins)).toBe('see $$x^2$$ end');
+    });
+
+    it('katex 無効時は $ をプレーンテキストとして扱う', () => {
+        const tokens = [mockTextToken('before $x^2$ after')];
+        expect(renderInline(tokens, noPlugins)).toBe('before $x^2$ after');
     });
 
     it('html_inline をパススルーして保持する', () => {

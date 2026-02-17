@@ -1,8 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { parseMd } from '../../lib/md-parser.js';
-import { transformTokens } from '../../lib/block-transforms/index.js';
+import {
+    transformTokens,
+    setPlugins,
+} from '../../lib/block-transforms/index.js';
 
 describe('Issue #5 transforms', () => {
+    const savedPlugins = new Set(['katex']);
+    beforeAll(() => setPlugins(savedPlugins));
+    afterAll(() => setPlugins(new Set()));
     it('インライン数式を paragraph 内ショートコードへ変換', () => {
         const { tokens } = parseMd('これは $E=mc^2$ です');
         const blocks = transformTokens(tokens);

@@ -13,6 +13,7 @@ export interface TransformDeps {
         innerBlocks?: Block[],
     ) => Block;
     renderInline: (children: Token[] | null) => string;
+    plugins: Set<string>;
 }
 
 /** 複数トークンを消費するブロック変換の戻り値 */
