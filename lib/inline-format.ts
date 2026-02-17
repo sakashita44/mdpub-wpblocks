@@ -7,41 +7,13 @@
 
 import type Token from 'markdown-it/lib/token.mjs';
 import { escapeHtml } from './html-utils.js';
-
-const INLINE_MATH_PATTERN = /(?<!\\)(?<!\$)\$(?!\$)([^\n$]+?)\$(?!\$)/g;
-
-/** テキスト内の inline math を KaTeX shortcode へ変換 */
-function renderTextWithInlineMath(text: string): string {
-    let lastIndex = 0;
-    const parts: string[] = [];
-
-    // matchAll を使用し、グローバル正規表現の lastIndex ステート共有リスクを回避
-    for (const match of text.matchAll(INLINE_MATH_PATTERN)) {
-        const before = text
-            .slice(lastIndex, match.index)
-            .replaceAll('\\$', '$');
-        if (before) {
-            parts.push(escapeHtml(before));
-        }
-
-        const expr = match[1].trim();
-        if (expr) {
-            parts.push(`[katex]${expr}[/katex]`);
-        }
-
-        lastIndex = (match.index ?? 0) + match[0].length;
-    }
-
-    const tail = text.slice(lastIndex).replaceAll('\\$', '$');
-    if (tail) {
-        parts.push(escapeHtml(tail));
-    }
-
-    return parts.join('');
-}
+import { renderTextWithInlineMath } from './plugins/katex.js';
 
 /** インライントークン配列を HTML 文字列に変換 */
-export function renderInline(children: Token[] | null): string {
+export function renderInline(
+    children: Token[] | null,
+    plugins: Set<string>,
+): string {
     if (!children || children.length === 0) return '';
 
     const parts: string[] = [];
@@ -49,7 +21,11 @@ export function renderInline(children: Token[] | null): string {
     for (const token of children) {
         switch (token.type) {
             case 'text':
-                parts.push(renderTextWithInlineMath(token.content));
+                if (plugins.has('katex')) {
+                    parts.push(renderTextWithInlineMath(token.content));
+                } else {
+                    parts.push(escapeHtml(token.content));
+                }
                 break;
             // html_inline はパススルーする。
             // Markdown の作成者＝ツール利用者自身であり XSS の実害は低い。

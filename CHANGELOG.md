@@ -7,6 +7,29 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-02-18
+
+### Breaking Changes
+
+- 全ソースを TypeScript（`.ts`）に移行（#22, #31）
+- 設定ファイルを `.mdpub-wpblocks.json` / `.registry.yaml` から `.env` / `.mdpub-cache.json` の 2 ファイル構成に変更（#14）
+- `WpClient` インターフェースから `listPostsPage` / `listMediaPage` を削除し、`listPlugins` を追加（#14）
+
+### Added
+
+- `sync` コマンド: `GET /wp/v2/plugins` からアクティブプラグイン情報を取得し `.mdpub-cache.json` にキャッシュ（#14）
+- プラグイン自動検出: WP plugin slug → mdpub プラグイン名マッピング（`lib/plugins/wp-plugin-map.ts`）
+- KaTeX プラグインを WP プラグイン状態で自動検出（手動設定不要）
+- `pipeline` の先頭に `sync` ステップを追加
+
+### Changed
+
+- TypeScript 移行に伴い `tsconfig.json` / `tsconfig.build.json` を整備、ESLint を `typescript-eslint` に移行（#22）
+- `resolveProjectRoot` を package.json 上方探索方式に変更（`dist/` 配下でも動作）（#22）
+- `cleanupWpEnv()` 追加により `npm run` 経由でも正常終了するよう修正（#31）
+- `contentRoot` を環境変数 / デフォルト値で解決（設定ファイル不要）（#14）
+- `yaml` 依存を削除（#14）
+
 ## [1.0.0] - 2026-02-14
 
 ### Added

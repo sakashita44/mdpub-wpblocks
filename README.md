@@ -166,7 +166,7 @@ npm run convert -- [--content-root <path>] <article-slug|path-to-md>
 npm run upload-media -- [--content-root <path>] <article-slug|path-to-article-dir> [--force-upload]
 npm run publish -- [--content-root <path>] <article-slug|path-to-index-md>
 npm run pipeline -- [--content-root <path>] [--force-upload] <article-slug|path>
-npm run sync -- [--output <path>] [--content-root <path>]
+npm run sync
 ```
 
 `mdpub` でも同等に実行可能:
@@ -176,30 +176,23 @@ mdpub convert [--content-root <path>] <article-slug|path-to-md>
 mdpub upload-media [--content-root <path>] <article-slug|path-to-article-dir> [--force-upload]
 mdpub publish [--content-root <path>] <article-slug|path-to-index-md>
 mdpub pipeline [--content-root <path>] [--force-upload] <article-slug|path>
-mdpub sync [--output <path>] [--content-root <path>]
+mdpub sync
 ```
 
-## 設定ファイルと環境変数
+## 設定ファイル
 
-### `.mdpub-wpblocks.json` スキーマ
+### `.env`（ユーザ設定）
 
-現行実装で解釈する設定は `contentRoot` のみ。
+WordPress 接続情報を管理する。`mdpub init` で `.env.example` を生成。
 
-```json
-{
-    "contentRoot": "posts"
-}
-```
+### `.mdpub-cache.json`（自動生成キャッシュ）
 
-| キー          | 型     | デフォルト | 説明                                               |
-| ------------- | ------ | ---------- | -------------------------------------------------- |
-| `contentRoot` | string | `posts`    | 記事コンテンツのルートディレクトリ（相対パス推奨） |
+`sync` コマンドが WordPress のプラグイン情報を取得して自動生成するキャッシュファイル。手動編集は不要。`pipeline` 実行時に自動で先頭ステップとして実行される。
 
 ### `contentRoot` 解決優先順位
 
 1. CLI 引数 `--content-root`
 1. 環境変数 `MDPUB_CONTENT_ROOT`
-1. `.mdpub-wpblocks.json` の `contentRoot`
 1. デフォルト `posts`
 
 ### WordPress 接続環境変数

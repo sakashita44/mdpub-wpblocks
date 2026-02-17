@@ -3,7 +3,7 @@ node/
 dist/
 posts/*
 !posts/sample-article/
-.registry.yaml
+.mdpub-cache.json
 .env
 *.log
 .claude/*.local.*

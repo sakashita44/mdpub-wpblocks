@@ -14,6 +14,7 @@ import type {
     WpPost,
     WpMedia,
     WpTerm,
+    WpPlugin,
 } from './types.js';
 
 /** WP REST API クライアントを生成する */
@@ -165,38 +166,8 @@ export function createWpClient({
             return results.length > 0 ? results[0] : null;
         },
 
-        async listPostsPage(
-            page = 1,
-            perPage = 100,
-        ): Promise<{ items: WpPost[]; totalPages: number | null }> {
-            const params = new URLSearchParams({
-                page: String(page),
-                per_page: String(perPage),
-            });
-            const { data, totalPages } = await apiFetchWithMeta<WpPost[]>(
-                `/wp/v2/posts?${params.toString()}`,
-            );
-            return {
-                items: data,
-                totalPages,
-            };
-        },
-
-        async listMediaPage(
-            page = 1,
-            perPage = 100,
-        ): Promise<{ items: WpMedia[]; totalPages: number | null }> {
-            const params = new URLSearchParams({
-                page: String(page),
-                per_page: String(perPage),
-            });
-            const { data, totalPages } = await apiFetchWithMeta<WpMedia[]>(
-                `/wp/v2/media?${params.toString()}`,
-            );
-            return {
-                items: data,
-                totalPages,
-            };
+        async listPlugins(): Promise<WpPlugin[]> {
+            return apiFetch<WpPlugin[]>('/wp/v2/plugins');
         },
 
         async createPost(payload: Record<string, unknown>): Promise<WpPost> {

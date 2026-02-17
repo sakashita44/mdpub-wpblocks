@@ -11,7 +11,12 @@ import {
     mockInlineToken,
 } from '../helpers/mock-token.js';
 
-const deps = { createBlock, renderInline };
+const noPlugins = new Set<string>();
+const deps = {
+    createBlock,
+    renderInline: (children: Token[] | null) =>
+        renderInline(children, noPlugins),
+};
 
 /** inline トークンを生成 */
 function fakeInline(text: string) {
@@ -169,7 +174,7 @@ describe('transformList', () => {
 
     it('loose list の複数段落を保持する', () => {
         const { tokens } = parseMd('- para1\n\n  para2');
-        const blocks = transformTokens(tokens);
+        const blocks = transformTokens(tokens, new Set());
 
         expect(blocks).toHaveLength(1);
         expect(blocks[0].name).toBe('core/list');

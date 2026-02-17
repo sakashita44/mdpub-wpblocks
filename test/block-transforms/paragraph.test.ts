@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type Token from 'markdown-it/lib/token.mjs';
 import { createBlock } from '../../lib/wp-env.js';
 import { renderInline } from '../../lib/inline-format.js';
 import { transformParagraph } from '../../lib/block-transforms/paragraph.js';
@@ -8,7 +9,12 @@ import {
     mockInlineToken,
 } from '../helpers/mock-token.js';
 
-const deps = { createBlock, renderInline };
+const noPlugins = new Set<string>();
+const deps = {
+    createBlock,
+    renderInline: (children: Token[] | null) =>
+        renderInline(children, noPlugins),
+};
 
 /** inline トークンのモック */
 function fakeInline(text: string) {

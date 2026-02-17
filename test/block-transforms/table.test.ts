@@ -16,7 +16,12 @@ interface TableAttrs {
     body: { cells: { content: string; tag: string; align?: string }[] }[];
 }
 
-const deps = { createBlock, renderInline };
+const noPlugins = new Set<string>();
+const deps = {
+    createBlock,
+    renderInline: (children: Token[] | null) =>
+        renderInline(children, noPlugins),
+};
 
 /**
  * markdown-it のテーブルトークン列を簡易生成するヘルパー

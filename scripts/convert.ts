@@ -15,6 +15,7 @@ import {
     resolveArticleMarkdownPath,
 } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
+import { loadPlugins } from '../lib/plugins/config.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
@@ -52,9 +53,11 @@ if (!existsSync(mdPath)) {
     process.exit(1);
 }
 
+const plugins = loadPlugins(projectRoot);
+
 const markdownString = readFileSync(mdPath, 'utf-8');
 const { tokens } = parseMd(markdownString);
-const blocks = transformTokens(tokens);
+const blocks = transformTokens(tokens, plugins);
 const html = serialize(blocks);
 
 console.log(html);

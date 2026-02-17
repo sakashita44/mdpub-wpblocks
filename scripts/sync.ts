@@ -1,14 +1,16 @@
 /**
- * CLI: サーバ状態から .registry.yaml を再生成（Issue #8）
+ * CLI: WP プラグイン情報を取得し .mdpub-cache.json に書き出す
+ *
+ * 使い方:
+ *   node dist/scripts/sync.js
  */
 
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { stringify as stringifyYaml } from 'yaml';
 import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.js';
-import { extractOption, resolveContentRoot } from '../lib/cli-config.js';
+import { mapWpPlugins } from '../lib/plugins/wp-plugin-map.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
-import type { WpClientConfig, WpPost, WpMedia } from '../lib/types.js';
+import type { MdpubCache, WpClientConfig } from '../lib/types.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
@@ -20,29 +22,6 @@ main().catch((e: unknown) => {
 });
 
 async function main(): Promise<void> {
-    let outputPath: string | undefined;
-    let cliContentRoot: string | undefined;
-
-    try {
-        const parsedOutput = extractOption(process.argv.slice(2), '--output');
-        outputPath = parsedOutput.value;
-
-        const parsedContentRoot = extractOption(
-            parsedOutput.rest,
-            '--content-root',
-        );
-        cliContentRoot = parsedContentRoot.value;
-    } catch (e) {
-        console.error(`引数エラー: ${(e as Error).message}`);
-        process.exit(1);
-    }
-
-    const output = resolve(projectRoot, outputPath || '.registry.yaml');
-    const { value: contentRoot } = resolveContentRoot({
-        projectRoot,
-        cliValue: cliContentRoot,
-    });
-
     let config: WpClientConfig;
     try {
         config = getWpConfig();
@@ -51,71 +30,30 @@ async function main(): Promise<void> {
         process.exit(1);
     }
 
+    const wp = createWpClient(config);
+
+    let wpPlugins;
     try {
-        const wp = createWpClient(config);
-        const [posts, media] = await Promise.all([
-            fetchAll<WpPost>((page, perPage) =>
-                wp.listPostsPage(page, perPage),
-            ),
-            fetchAll<WpMedia>((page, perPage) =>
-                wp.listMediaPage(page, perPage),
-            ),
-        ]);
-
-        const registry = {
-            generatedAt: new Date().toISOString(),
-            contentRoot,
-            posts: posts.map((post) => ({
-                id: post.id,
-                slug: post.slug,
-                status: post.status,
-                date: post.date,
-                modified: post.modified,
-                link: post.link,
-            })),
-            media: media.map((item) => ({
-                id: item.id,
-                slug: item.slug,
-                source_url: item.source_url,
-                mime_type: item.mime_type,
-            })),
-        };
-
-        writeFileSync(output, stringifyYaml(registry), 'utf-8');
-        console.log(
-            `✅ ${output} を生成しました（posts: ${posts.length}, media: ${media.length}）`,
-        );
-        process.exit(0);
+        wpPlugins = await wp.listPlugins();
     } catch (e) {
-        console.error(`❌ sync に失敗しました: ${(e as Error).message}`);
-        process.exit(1);
-    }
-}
-
-async function fetchAll<T>(
-    fetchPage: (
-        page: number,
-        perPage: number,
-    ) => Promise<{ items: T[]; totalPages: number | null }>,
-    pageSize: number = 100,
-): Promise<T[]> {
-    const all: T[] = [];
-    let page = 1;
-
-    while (true) {
-        const { items, totalPages } = await fetchPage(page, pageSize);
-        all.push(...items);
-
-        if (typeof totalPages === 'number') {
-            if (page >= totalPages) {
-                break;
-            }
-        } else if (items.length < pageSize) {
-            break;
+        const msg = (e as Error).message || '';
+        if (/403|401|Forbidden|Unauthorized/i.test(msg)) {
+            console.error(
+                'プラグイン一覧の取得に失敗しました。WordPress の Application Password に管理者権限があるか確認してください。',
+            );
         }
-
-        page++;
+        throw e;
     }
+    const mdpubPlugins = mapWpPlugins(wpPlugins);
 
-    return all;
+    const cache: MdpubCache = {
+        generatedAt: new Date().toISOString(),
+        plugins: [...mdpubPlugins],
+    };
+
+    const outputPath = resolve(projectRoot, '.mdpub-cache.json');
+    writeFileSync(outputPath, JSON.stringify(cache, null, 4) + '\n', 'utf-8');
+    console.log(
+        `✅ ${outputPath} を生成しました（plugins: ${mdpubPlugins.size}）`,
+    );
 }
