@@ -222,87 +222,32 @@ describe('createWpClient', () => {
         });
     });
 
-    describe('listPostsPage / listMediaPage', () => {
-        it('ページ指定で投稿一覧を取得できる', async () => {
+    describe('listPlugins', () => {
+        it('プラグイン一覧を取得できる', async () => {
+            const plugins = [
+                {
+                    plugin: 'katex/katex',
+                    status: 'active',
+                    name: 'KaTeX',
+                },
+            ];
             globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
-                headers: {
-                    get: () => null,
-                },
-                json: () => Promise.resolve([{ id: 1, slug: 'a' }]),
+                json: () => Promise.resolve(plugins),
             });
 
             const wp = createWpClient(testConfig);
-            const result = await wp.listPostsPage(2, 50);
+            const result = await wp.listPlugins();
 
-            expect(result).toEqual({
-                items: [{ id: 1, slug: 'a' }],
-                totalPages: null,
-            });
+            expect(result).toEqual(plugins);
             expect(globalThis.fetch).toHaveBeenCalledWith(
-                'https://example.com/wp-json/wp/v2/posts?page=2&per_page=50',
-                expect.anything(),
+                'https://example.com/wp-json/wp/v2/plugins',
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        Authorization: expectedAuth,
+                    }),
+                }),
             );
-        });
-
-        it('ページ指定でメディア一覧を取得できる', async () => {
-            globalThis.fetch = vi.fn().mockResolvedValue({
-                ok: true,
-                headers: {
-                    get: () => null,
-                },
-                json: () => Promise.resolve([{ id: 9, slug: 'img' }]),
-            });
-
-            const wp = createWpClient(testConfig);
-            const result = await wp.listMediaPage(3, 20);
-
-            expect(result).toEqual({
-                items: [{ id: 9, slug: 'img' }],
-                totalPages: null,
-            });
-            expect(globalThis.fetch).toHaveBeenCalledWith(
-                'https://example.com/wp-json/wp/v2/media?page=3&per_page=20',
-                expect.anything(),
-            );
-        });
-
-        it('投稿一覧を totalPages 付きで取得できる', async () => {
-            globalThis.fetch = vi.fn().mockResolvedValue({
-                ok: true,
-                headers: {
-                    get: (name: string) =>
-                        name === 'X-WP-TotalPages' ? '7' : null,
-                },
-                json: () => Promise.resolve([{ id: 2, slug: 'b' }]),
-            });
-
-            const wp = createWpClient(testConfig);
-            const result = await wp.listPostsPage(1, 100);
-
-            expect(result).toEqual({
-                items: [{ id: 2, slug: 'b' }],
-                totalPages: 7,
-            });
-        });
-
-        it('メディア一覧を totalPages 付きで取得できる', async () => {
-            globalThis.fetch = vi.fn().mockResolvedValue({
-                ok: true,
-                headers: {
-                    get: (name: string) =>
-                        name === 'X-WP-TotalPages' ? '3' : null,
-                },
-                json: () => Promise.resolve([{ id: 10, slug: 'img2' }]),
-            });
-
-            const wp = createWpClient(testConfig);
-            const result = await wp.listMediaPage(1, 100);
-
-            expect(result).toEqual({
-                items: [{ id: 10, slug: 'img2' }],
-                totalPages: 3,
-            });
         });
     });
 

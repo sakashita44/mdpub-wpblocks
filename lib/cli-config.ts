@@ -2,11 +2,8 @@
  * CLI 設定・引数解析
  */
 
-import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { ExtractOptionResult, ExtractFlagResult } from './types.js';
-
-const CONFIG_FILE = '.mdpub-wpblocks.json';
 
 export function extractOption(
     args: string[],
@@ -54,6 +51,10 @@ export function extractFlag(args: string[], name: string): ExtractFlagResult {
     };
 }
 
+/**
+ * content root を解決する。
+ * 優先順位: CLI 引数 > 環境変数 > デフォルト `posts`
+ */
 export function resolveContentRoot({
     projectRoot,
     cliValue,
@@ -61,9 +62,6 @@ export function resolveContentRoot({
     projectRoot: string;
     cliValue: string | undefined;
 }): { value: string; absPath: string } {
-    const config = loadProjectConfig(projectRoot);
-    const configValue =
-        typeof config.contentRoot === 'string' ? config.contentRoot : undefined;
     const selected = selectContentRoot([
         {
             value: cliValue,
@@ -72,10 +70,6 @@ export function resolveContentRoot({
         {
             value: process.env.MDPUB_CONTENT_ROOT,
             source: '環境変数 MDPUB_CONTENT_ROOT',
-        },
-        {
-            value: configValue,
-            source: `設定ファイル ${CONFIG_FILE}`,
         },
     ]);
 
@@ -108,27 +102,6 @@ export function resolveArticleMarkdownPath(
     }
 
     return resolve(contentRootAbsPath, input, 'index.md');
-}
-
-export function loadProjectConfig(
-    projectRoot: string,
-): Record<string, unknown> {
-    const configPath = resolve(projectRoot, CONFIG_FILE);
-    if (!existsSync(configPath)) {
-        return {};
-    }
-
-    try {
-        return JSON.parse(readFileSync(configPath, 'utf-8')) as Record<
-            string,
-            unknown
-        >;
-    } catch (e) {
-        throw new Error(
-            `${CONFIG_FILE} の読み込みに失敗しました: ${(e as Error).message}`,
-            { cause: e },
-        );
-    }
 }
 
 function looksLikePath(input: string): boolean {

@@ -9,7 +9,7 @@ function createTempDir(): string {
 }
 
 describe('loadPlugins', () => {
-    it('設定ファイルが存在しない場合は空 Set を返す', () => {
+    it('キャッシュファイルが存在しない場合は空 Set を返す', () => {
         const dir = createTempDir();
         try {
             const result = loadPlugins(dir);
@@ -19,12 +19,12 @@ describe('loadPlugins', () => {
         }
     });
 
-    it('plugins フィールドが未定義の場合は空 Set を返す', () => {
+    it('plugins フィールドが配列でない場合は空 Set を返す', () => {
         const dir = createTempDir();
         try {
             writeFileSync(
-                join(dir, '.mdpub-wpblocks.json'),
-                JSON.stringify({ contentRoot: 'posts' }),
+                join(dir, '.mdpub-cache.json'),
+                JSON.stringify({ generatedAt: '2026-01-01', plugins: null }),
             );
             const result = loadPlugins(dir);
             expect(result).toEqual(new Set());
@@ -37,8 +37,11 @@ describe('loadPlugins', () => {
         const dir = createTempDir();
         try {
             writeFileSync(
-                join(dir, '.mdpub-wpblocks.json'),
-                JSON.stringify({ plugins: ['katex'] }),
+                join(dir, '.mdpub-cache.json'),
+                JSON.stringify({
+                    generatedAt: '2026-01-01',
+                    plugins: ['katex'],
+                }),
             );
             const result = loadPlugins(dir);
             expect(result).toEqual(new Set(['katex']));
@@ -47,27 +50,13 @@ describe('loadPlugins', () => {
         }
     });
 
-    it('plugins が配列でない場合はエラー', () => {
+    it('不正な JSON の場合はエラー', () => {
         const dir = createTempDir();
         try {
-            writeFileSync(
-                join(dir, '.mdpub-wpblocks.json'),
-                JSON.stringify({ plugins: 'katex' }),
+            writeFileSync(join(dir, '.mdpub-cache.json'), '{invalid json}');
+            expect(() => loadPlugins(dir)).toThrow(
+                '.mdpub-cache.json の読み込みに失敗しました',
             );
-            expect(() => loadPlugins(dir)).toThrow('文字列の配列');
-        } finally {
-            rmSync(dir, { recursive: true });
-        }
-    });
-
-    it('plugins 配列に文字列以外が含まれる場合はエラー', () => {
-        const dir = createTempDir();
-        try {
-            writeFileSync(
-                join(dir, '.mdpub-wpblocks.json'),
-                JSON.stringify({ plugins: ['katex', 123] }),
-            );
-            expect(() => loadPlugins(dir)).toThrow('文字列の配列');
         } finally {
             rmSync(dir, { recursive: true });
         }

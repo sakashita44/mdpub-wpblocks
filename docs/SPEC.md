@@ -252,12 +252,12 @@ https://www.youtube.com/watch?v=xxxxx
 1. `upload-media`（画像アップロード）
 1. `publish`（draft 投稿）
 
-### レジストリ再生成
+### プラグイン同期（sync）
 
-`sync` コマンドはサーバ状態から `.registry.yaml` を再生成する。
+`sync` コマンドは WordPress の `GET /wp/v2/plugins` からプラグイン情報を取得し、`.mdpub-cache.json` に書き出す。
 
-- 取得対象: 投稿一覧、メディア一覧
-- ローカルキャッシュとしての運用はしない（可視化・監査用途）
+- `pipeline` 実行時に自動で先頭ステップとして実行される
+- 単独実行: `npm run sync` / `mdpub sync`
 
 ### content root 設定
 
@@ -265,36 +265,44 @@ https://www.youtube.com/watch?v=xxxxx
 
 1. CLI 引数 `--content-root`
 1. 環境変数 `MDPUB_CONTENT_ROOT`
-1. 設定ファイル `.mdpub-wpblocks.json` の `contentRoot`
 1. デフォルト `posts`
 
-## 設定ファイルスキーマ
+## 設定ファイル
 
-`.mdpub-wpblocks.json` で解釈するフィールド:
+### `.env`（ユーザ設定）
+
+WordPress 接続情報と content root を管理する。`mdpub init` で `.env.example` を生成。
+
+### `.mdpub-cache.json`（sync 生成キャッシュ）
+
+`sync` コマンドが生成するサーバ状態キャッシュ。手動編集は不要。
 
 ```json
 {
-    "contentRoot": "posts",
+    "generatedAt": "2026-02-17T00:00:00.000Z",
     "plugins": ["katex"]
 }
 ```
 
-| フィールド    | 型       | 必須 | デフォルト | 説明                                                      |
-| ------------- | -------- | ---- | ---------- | --------------------------------------------------------- |
-| `contentRoot` | string   |      | `posts`    | 記事コンテンツのルート。CLI 引数/環境変数より優先度は低い |
-| `plugins`     | string[] |      | `[]`       | 有効プラグイン名の配列。`katex` 等を指定                  |
+| フィールド    | 型       | 説明                                   |
+| ------------- | -------- | -------------------------------------- |
+| `generatedAt` | string   | 生成日時（ISO 8601）                   |
+| `plugins`     | string[] | mdpub が認識する有効プラグイン名の配列 |
 
-### `plugins` フィールド
+### プラグイン自動検出
 
-変換時に利用するプラグインを制御する。未指定または空配列の場合、プラグイン固有の変換は無効になる。
+`sync` が WP のプラグイン一覧から active なプラグインを検出し、mdpub 内部名にマッピングする。
 
-- `katex`: インライン数式 `$...$` → `[katex]...[/katex]`、ディスプレイ数式 `$$...$$` → `core/shortcode` ブロック。無効時はプレーンテキストとして扱う。
+| WP plugin slug | mdpub プラグイン名 | 効果                                                              |
+| -------------- | ------------------ | ----------------------------------------------------------------- |
+| `katex/katex`  | `katex`            | `$...$` → `[katex]...[/katex]`、`$$...$$` → `core/shortcode` 変換 |
+
+未知のプラグインや inactive なプラグインは無視される。`sync` 未実行時は空 Set（プラグインなし動作）。
 
 ### `contentRoot` 解決優先順位
 
 1. CLI 引数 `--content-root`
 1. 環境変数 `MDPUB_CONTENT_ROOT`
-1. `.mdpub-wpblocks.json` の `contentRoot`
 1. デフォルト `posts`
 
 ## 環境変数仕様

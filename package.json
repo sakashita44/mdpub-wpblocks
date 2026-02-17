@@ -36,8 +36,7 @@
         "gray-matter": "^4.0.3",
         "happy-dom": "^20.6.0",
         "markdown-it": "^14.1.1",
-        "markdown-it-container": "^4.0.0",
-        "yaml": "^2.8.2"
+        "markdown-it-container": "^4.0.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.39.2",

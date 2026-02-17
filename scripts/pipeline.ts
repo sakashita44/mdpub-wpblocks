@@ -60,6 +60,8 @@ const uploadInput = articleInput.endsWith('.md')
     : articleInput;
 
 try {
+    runStep('sync', ['dist/scripts/sync.js'], true);
+
     runStep(
         'convert',
         ['dist/scripts/convert.js', ...commonArgs, markdownInput],

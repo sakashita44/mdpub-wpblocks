@@ -67,20 +67,26 @@ export interface ApiFetchResult<T> {
     totalPages: number | null;
 }
 
+/** WordPress プラグインオブジェクト（`GET /wp/v2/plugins` レスポンスの部分型） */
+export interface WpPlugin {
+    plugin: string;
+    status: string;
+    name: string;
+}
+
+/** `.mdpub-cache.json` のスキーマ */
+export interface MdpubCache {
+    generatedAt: string;
+    plugins: string[];
+}
+
 /** WP REST API クライアントのインターフェース */
 export interface WpClient {
     findMediaBySlug(slug: string): Promise<WpMedia | null>;
     findPostBySlug(slug: string): Promise<WpPost | null>;
     findCategoryBySlug(slug: string): Promise<WpTerm | null>;
     findTagBySlug(slug: string): Promise<WpTerm | null>;
-    listPostsPage(
-        page?: number,
-        perPage?: number,
-    ): Promise<{ items: WpPost[]; totalPages: number | null }>;
-    listMediaPage(
-        page?: number,
-        perPage?: number,
-    ): Promise<{ items: WpMedia[]; totalPages: number | null }>;
+    listPlugins(): Promise<WpPlugin[]>;
     createPost(payload: Record<string, unknown>): Promise<WpPost>;
     updatePost(
         postId: number,
