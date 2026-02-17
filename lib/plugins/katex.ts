@@ -12,6 +12,7 @@ import { escapeHtml } from '../html-utils.js';
 
 const INLINE_MATH_PATTERN = /(?<!\\)(?<!\$)\$(?!\$)([^\n$]+?)\$(?!\$)/g;
 
+/** @internal テスト・他モジュールからの参照用に export */
 export const DISPLAY_MATH_PATTERN = /^\$\$([\s\S]*?)\$\$$/;
 
 /** テキスト内のインライン数式を KaTeX ショートコードへ変換 */
