@@ -16,8 +16,8 @@ import {
     extractImagePaths,
     resolveImagePath,
 } from '../lib/media-slug.js';
-import dotenv from 'dotenv';
 import { createWpClient, getWpConfig } from '../lib/wp-client.js';
+import { initEnv } from '../lib/env.js';
 import {
     extractFlag,
     extractOption,
@@ -29,12 +29,7 @@ import type { WpClientConfig } from '../lib/types.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
-const dotenvResult = dotenv.config({ path: resolve(projectRoot, '.env') });
-if (dotenvResult.error) {
-    console.warn(
-        `⚠️ .env を読み込めませんでした: ${dotenvResult.error.message}`,
-    );
-}
+initEnv(resolve(projectRoot, '.env'));
 
 // --- 引数パース ---
 const args = process.argv.slice(2);

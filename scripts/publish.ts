@@ -14,8 +14,8 @@ import { parseMd } from '../lib/md-parser.js';
 import { transformTokens } from '../lib/block-transforms/index.js';
 import { loadPlugins } from '../lib/plugins/config.js';
 import { serialize, cleanupWpEnv } from '../lib/wp-env.js';
-import dotenv from 'dotenv';
 import { createWpClient, getWpConfig } from '../lib/wp-client.js';
+import { initEnv } from '../lib/env.js';
 import { expectedSlug, extractImagePaths } from '../lib/media-slug.js';
 import {
     validateFrontmatter,
@@ -37,12 +37,7 @@ import type {
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
-const dotenvResult = dotenv.config({ path: resolve(projectRoot, '.env') });
-if (dotenvResult.error) {
-    console.warn(
-        `⚠️ .env を読み込めませんでした: ${dotenvResult.error.message}`,
-    );
-}
+initEnv(resolve(projectRoot, '.env'));
 
 let cliContentRoot: string | undefined;
 let rest: string[];
