@@ -29,7 +29,12 @@ import type { WpClientConfig } from '../lib/types.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
-dotenv.config({ path: resolve(projectRoot, '.env') });
+const dotenvResult = dotenv.config({ path: resolve(projectRoot, '.env') });
+if (dotenvResult.error) {
+    console.warn(
+        `⚠️ .env を読み込めませんでした: ${dotenvResult.error.message}`,
+    );
+}
 
 // --- 引数パース ---
 const args = process.argv.slice(2);

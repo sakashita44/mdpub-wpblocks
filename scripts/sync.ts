@@ -15,7 +15,12 @@ import type { MdpubCache, WpClientConfig } from '../lib/types.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
-dotenv.config({ path: resolve(projectRoot, '.env') });
+const dotenvResult = dotenv.config({ path: resolve(projectRoot, '.env') });
+if (dotenvResult.error) {
+    console.warn(
+        `⚠️ .env を読み込めませんでした: ${dotenvResult.error.message}`,
+    );
+}
 
 main().catch((e: unknown) => {
     console.error(`❌ sync に失敗しました: ${(e as Error).message}`);
