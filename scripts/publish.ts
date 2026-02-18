@@ -14,7 +14,8 @@ import { parseMd } from '../lib/md-parser.js';
 import { transformTokens } from '../lib/block-transforms/index.js';
 import { loadPlugins } from '../lib/plugins/config.js';
 import { serialize, cleanupWpEnv } from '../lib/wp-env.js';
-import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.js';
+import dotenv from 'dotenv';
+import { createWpClient, getWpConfig } from '../lib/wp-client.js';
 import { expectedSlug, extractImagePaths } from '../lib/media-slug.js';
 import {
     validateFrontmatter,
@@ -36,7 +37,7 @@ import type {
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
-loadEnv(resolve(projectRoot, '.env'));
+dotenv.config({ path: resolve(projectRoot, '.env') });
 
 let cliContentRoot: string | undefined;
 let rest: string[];

@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { createWpClient, getWpConfig, loadEnv } from '../lib/wp-client.js';
+import { createWpClient, getWpConfig } from '../lib/wp-client.js';
 
 // node:fs の readFileSync をモック可能にする（デフォルトは実装に委譲）
 vi.mock('node:fs', async (importOriginal) => {
@@ -440,62 +440,5 @@ describe('getWpConfig', () => {
         delete process.env.WP_APP_PASSWORD;
 
         expect(() => getWpConfig()).toThrow('環境変数が未設定です');
-    });
-});
-
-describe('loadEnv', () => {
-    let originalEnv: NodeJS.ProcessEnv;
-
-    beforeEach(() => {
-        originalEnv = { ...process.env };
-    });
-
-    afterEach(() => {
-        process.env = originalEnv;
-        vi.mocked(readFileSync).mockReset();
-    });
-
-    it('ダブルクォートで囲まれた値のクォートを除去する', () => {
-        vi.mocked(readFileSync).mockReturnValueOnce('TEST_DQ="hello world"');
-        delete process.env.TEST_DQ;
-
-        loadEnv('/fake/.env');
-
-        expect(process.env.TEST_DQ).toBe('hello world');
-    });
-
-    it('シングルクォートで囲まれた値のクォートを除去する', () => {
-        vi.mocked(readFileSync).mockReturnValueOnce("TEST_SQ='hello world'");
-        delete process.env.TEST_SQ;
-
-        loadEnv('/fake/.env');
-
-        expect(process.env.TEST_SQ).toBe('hello world');
-    });
-
-    it('クォートなしの値はそのまま読み込む', () => {
-        vi.mocked(readFileSync).mockReturnValueOnce('TEST_NQ=plain-value');
-        delete process.env.TEST_NQ;
-
-        loadEnv('/fake/.env');
-
-        expect(process.env.TEST_NQ).toBe('plain-value');
-    });
-
-    it('既存の環境変数は上書きしない', () => {
-        vi.mocked(readFileSync).mockReturnValueOnce('TEST_EXIST=new');
-        process.env.TEST_EXIST = 'old';
-
-        loadEnv('/fake/.env');
-
-        expect(process.env.TEST_EXIST).toBe('old');
-    });
-
-    it('.env が存在しない場合は何もしない', () => {
-        vi.mocked(readFileSync).mockImplementationOnce(() => {
-            throw new Error('ENOENT');
-        });
-
-        expect(() => loadEnv('/nonexistent/.env')).not.toThrow();
     });
 });

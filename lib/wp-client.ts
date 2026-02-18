@@ -233,38 +233,6 @@ function guessMimeType(filename: string): string {
     return mimeMap[ext] || 'application/octet-stream';
 }
 
-/**
- * .env ファイルから環境変数を読み込む（簡易実装）
- * 既存の環境変数は上書きしない
- */
-export function loadEnv(envPath: string): void {
-    let content: string;
-    try {
-        content = readFileSync(envPath, 'utf-8');
-    } catch {
-        return; // .env が無い場合は何もしない
-    }
-
-    for (const line of content.split('\n')) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) continue;
-        const eqIndex = trimmed.indexOf('=');
-        if (eqIndex === -1) continue;
-        const key = trimmed.slice(0, eqIndex).trim();
-        let value = trimmed.slice(eqIndex + 1).trim();
-        // 囲みクォート（"..." / '...'）を除去
-        if (
-            (value.startsWith('"') && value.endsWith('"')) ||
-            (value.startsWith("'") && value.endsWith("'"))
-        ) {
-            value = value.slice(1, -1);
-        }
-        if (process.env[key] === undefined) {
-            process.env[key] = value;
-        }
-    }
-}
-
 /** 環境変数から WP 接続情報を取得する */
 export function getWpConfig(): WpClientConfig {
     const wpUrl = process.env.WP_URL;

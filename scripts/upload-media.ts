@@ -16,7 +16,8 @@ import {
     extractImagePaths,
     resolveImagePath,
 } from '../lib/media-slug.js';
-import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.js';
+import dotenv from 'dotenv';
+import { createWpClient, getWpConfig } from '../lib/wp-client.js';
 import {
     extractFlag,
     extractOption,
@@ -28,8 +29,7 @@ import type { WpClientConfig } from '../lib/types.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
-// .env 読み込み
-loadEnv(resolve(projectRoot, '.env'));
+dotenv.config({ path: resolve(projectRoot, '.env') });
 
 // --- 引数パース ---
 const args = process.argv.slice(2);
