@@ -21,13 +21,21 @@ import type {
 const require = createRequire(import.meta.url);
 const window = new Window({ url: 'https://localhost' });
 
+let cleaned = false;
+
 /**
  * happy-dom の Window が保持するリソース（タイマー等）を解放する。
- * スクリプト終了前に呼ぶことで、イベントループが自然に空になり process.exit() が不要になる。
+ * 冪等（二重呼び出し可）。`beforeExit` イベントでも自動実行されるため、
+ * 明示的に呼ばなくてもプロセスは自然に終了する。
  */
 export function cleanupWpEnv(): void {
+    if (cleaned) return;
+    cleaned = true;
     window.happyDOM.abort();
 }
+
+// 呼び忘れによるハングを防止するため、イベントループ終了時に自動実行
+process.on('beforeExit', cleanupWpEnv);
 
 // @wordpress/blocks が参照する DOM API をグローバルに登録
 const domGlobals = [
