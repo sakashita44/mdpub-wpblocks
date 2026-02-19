@@ -89,15 +89,38 @@ export function createWpClient({
             if (!res.ok && discoveredMode === null) {
                 const contentType = res.headers?.get?.('content-type') || '';
                 if (!contentType.includes('application/json')) {
+                    // primary 失敗情報を保持しておく
+                    const primaryUrl = url;
+                    const primaryStatus = `${res.status} ${res.statusText}`;
+
                     url = buildFallbackUrl(endpoint);
                     discoveredMode = 'fallback';
                     try {
                         res = await fetch(url, requestInit);
                     } catch (e) {
+                        const primaryError = new Error(
+                            `WP API エラー (primary): ${primaryStatus}\n` +
+                                `  URL: ${primaryUrl}`,
+                        );
                         throw new Error(
-                            `ネットワークエラー: ${url}\n` +
+                            `ネットワークエラー (fallback): ${url}\n` +
                                 `  詳細: ${(e as Error).message || String(e)}`,
-                            { cause: e },
+                            { cause: primaryError },
+                        );
+                    }
+
+                    // fallback も HTTP エラーの場合は primary 情報を cause に連鎖させる
+                    if (!res.ok) {
+                        const fallbackBody = await res.text();
+                        const primaryError = new Error(
+                            `WP API エラー (primary): ${primaryStatus}\n` +
+                                `  URL: ${primaryUrl}`,
+                        );
+                        throw new Error(
+                            `WP API エラー (fallback): ${res.status} ${res.statusText}\n` +
+                                `  URL: ${url}\n` +
+                                `  Body: ${fallbackBody}`,
+                            { cause: primaryError },
                         );
                     }
                 }
