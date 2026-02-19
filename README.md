@@ -42,7 +42,7 @@
 git clone https://github.com/sakashita44/mdpub-wpblocks.git
 cd mdpub-wpblocks
 npm install
-cp .env.example .env
+cp .env.example .env   # mdpub init でも生成可能
 ```
 
 `.env` を編集:
@@ -131,17 +131,19 @@ npm run wp:destroy
 `mdpub` コマンドとして使う場合:
 
 ```bash
+npm run build
 npm link
 mdpub --help
 ```
 
-初期設定ファイルの雛形を生成:
+初期設定（`.env.example` の生成と `.env` の作成）:
 
 ```bash
-mdpub init
+mdpub init          # .env.example を生成（cp .env.example .env でも可）
+# .env.example を参考に .env を作成し、WordPress 接続情報を設定
 ```
 
-`.env.example` を参考に `.env` を作成してから実行:
+`.env` を設定してから実行:
 
 ```bash
 mdpub convert my-first-post

@@ -12,7 +12,11 @@
 
 #17 docs: ドキュメント整備 ✅
 └──→ #19 CLI bin化と init 導入 ✅
-  └──→ v1.0.0 リリース準備
+  └──→ v1.0.0
+
+#14 プラグイン自動検出・TypeScript 化 ✅
+#36 dotenv 導入 ✅
+  └──→ v2.0.0
 ```
 
 | Issue | タイトル                            | 状態    | blocked by     | ブランチ                                             |
@@ -26,6 +30,8 @@
 | #8    | E2E 統合・CLI 仕上げ                | ✅ done | #4, #5, #6, #7 | feature/202602/sakashita44/8-e2e-cli-finish          |
 | #17   | docs: ドキュメント整備              | ✅ done | #8             | issue17-docs                                         |
 | #19   | feat: CLI bin化と init 導入         | ✅ done | #17            | feature/202602/sakashita44/19-cli-bin-init           |
+| #14   | プラグイン自動検出・TypeScript 化   | ✅ done | #19            | feature/202602/sakashita44/14-plugin-detect-ts       |
+| #36   | dotenv 導入                         | ✅ done | #14            | feature/202602/sakashita44/36-dotenv-replace         |
 
 ## 着手可能な Issue
 
@@ -33,19 +39,19 @@
 
 ## リリースロードマップ
 
-### v1.0.0 まで（安定版リリース）
+### v1.0.0（安定版リリース）
 
 - [x] #17 ドキュメント整備完了
 - [x] #19 CLI bin化と init 導入
 - [x] `npm run fix` / `npm test` を main でグリーン維持
 - [x] `v1.0.0` タグ付け・リリースノート整備
 
-### v1.0.1 以降
+### v2.0.0（プラグイン自動検出・TypeScript 化）
 
-- [ ] #14 refactor: プラグイン依存処理の分離（内部整理）
-- [ ] #10 test: md-parser / block-transforms 統合テスト追加（品質強化）
+- [x] #14 refactor: プラグイン自動検出・TypeScript 化
+- [x] #36 refactor: dotenv 導入
 
-### 将来の方向性
+### 将来
 
 - 変換対応や公開ワークフロー改善は、必要が明確になった時点で Issue 化してから着手
 - 候補リスト（未Issue・参考メモ）
