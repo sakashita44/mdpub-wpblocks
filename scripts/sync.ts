@@ -7,14 +7,15 @@
 
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { createWpClient, loadEnv, getWpConfig } from '../lib/wp-client.js';
+import { createWpClient, getWpConfig } from '../lib/wp-client.js';
+import { initEnv } from '../lib/env.js';
 import { mapWpPlugins } from '../lib/plugins/wp-plugin-map.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
 import type { MdpubCache, WpClientConfig } from '../lib/types.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
-loadEnv(resolve(projectRoot, '.env'));
+initEnv(resolve(projectRoot, '.env'));
 
 main().catch((e: unknown) => {
     console.error(`❌ sync に失敗しました: ${(e as Error).message}`);
