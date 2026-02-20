@@ -325,21 +325,21 @@ WordPress 接続情報と content root を管理する。`mdpub init` で `.env.
 
 ```mermaid
 flowchart TD
-    A[CLI scripts/*] --> B[lib/cli-config.mjs\n引数/設定解決]
-    A --> C[lib/wp-client.mjs\n.env読込 + REST API]
+    A[CLI scripts/*] --> B[lib/cli-config.ts\n引数/設定解決]
+    A --> C[lib/wp-client.ts\n.env読込 + REST API]
 
-    D[Markdown index.md] --> E[lib/md-parser.mjs]
+    D[Markdown index.md] --> E[lib/md-parser.ts]
     E --> F[lib/block-transforms/*]
-    F --> G[lib/wp-env.mjs serialize]
+    F --> G[lib/wp-env.ts serialize]
 
     C --> H[(WordPress REST API)]
-    I[lib/media-slug.mjs\nexpectedSlug/uploadFilename] --> C
+    I[lib/media-slug.ts\nexpectedSlug/uploadFilename] --> C
 
-    A --> J[scripts/upload-media.mjs]
+    A --> J[scripts/upload-media.ts]
     J --> I
     J --> H
 
-    A --> K[scripts/publish.mjs]
+    A --> K[scripts/publish.ts]
     K --> D
     K --> E
     K --> F
@@ -347,7 +347,7 @@ flowchart TD
     K --> I
     K --> H
 
-    A --> L[scripts/pipeline.mjs]
+    A --> L[scripts/pipeline.ts]
     L --> M[convert → upload-media → publish]
 ```
 
