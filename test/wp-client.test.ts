@@ -76,6 +76,8 @@ describe('createWpClient', () => {
                 ok: false,
                 status: 401,
                 statusText: 'Unauthorized',
+                // content-type を application/json に設定することで fallback に進まないようにする
+                headers: { get: () => 'application/json' },
                 text: () => Promise.resolve('{"message":"Unauthorized"}'),
             });
 
@@ -370,6 +372,84 @@ describe('createWpClient', () => {
                 'https://example.com/?slug=test&per_page=1&rest_route=%2Fwp%2Fv2%2Fmedia',
                 expect.anything(),
             );
+        });
+
+        it('primary 非JSON + fallback ネットワークエラーで cause に primary 情報が含まれる', async () => {
+            globalThis.fetch = vi
+                .fn()
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 404,
+                    statusText: 'Not Found',
+                    headers: { get: () => 'text/html' },
+                    text: () => Promise.resolve('not found'),
+                })
+                .mockRejectedValueOnce(new Error('connect ECONNREFUSED'));
+
+            const wp = createWpClient(testConfig);
+            const err = await wp.findMediaBySlug('test').catch((e) => e);
+
+            expect(err.message).toMatch('ネットワークエラー (fallback):');
+            expect(err.cause).toBeInstanceOf(Error);
+            expect((err.cause as Error).message).toMatch(
+                'WP API エラー (primary): 404 Not Found',
+            );
+        });
+
+        it('primary 非JSON + fallback HTTP エラーで cause に primary 情報が含まれる', async () => {
+            globalThis.fetch = vi
+                .fn()
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 404,
+                    statusText: 'Not Found',
+                    headers: { get: () => 'text/html' },
+                    text: () => Promise.resolve('not found'),
+                })
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 500,
+                    statusText: 'Internal Server Error',
+                    headers: { get: () => 'text/html' },
+                    text: () => Promise.resolve('<html>Error page</html>'),
+                });
+
+            const wp = createWpClient(testConfig);
+            const err = await wp.findMediaBySlug('test').catch((e) => e);
+
+            expect(err.message).toMatch('WP API エラー (fallback): 500');
+            expect(err.message).toMatch('Body: <html>Error page</html>');
+            expect(err.cause).toBeInstanceOf(Error);
+            expect((err.cause as Error).message).toMatch(
+                'WP API エラー (primary): 404 Not Found',
+            );
+        });
+
+        it('fallback レスポンスボディが 500 文字を超える場合は切り詰める', async () => {
+            const longBody = 'x'.repeat(1000);
+            globalThis.fetch = vi
+                .fn()
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 404,
+                    statusText: 'Not Found',
+                    headers: { get: () => 'text/html' },
+                    text: () => Promise.resolve('not found'),
+                })
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 502,
+                    statusText: 'Bad Gateway',
+                    headers: { get: () => 'text/html' },
+                    text: () => Promise.resolve(longBody),
+                });
+
+            const wp = createWpClient(testConfig);
+            const err = await wp.findMediaBySlug('test').catch((e) => e);
+
+            // エラーメッセージ中の Body 部分が 500 文字に切り詰められていること
+            const bodyInMessage = err.message.match(/Body: (.+)/s)?.[1] ?? '';
+            expect(bodyInMessage.length).toBeLessThanOrEqual(500);
         });
 
         it('フォールバック後は以降のリクエストも rest_route を使う', async () => {
