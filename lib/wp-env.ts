@@ -21,7 +21,7 @@ import type {
 const require = createRequire(import.meta.url);
 const window = new Window({ url: 'https://localhost' });
 
-let cleaned = false;
+let wpEnvCleaned = false;
 
 /**
  * happy-dom の Window が保持するリソース（タイマー等）を解放する。
@@ -29,12 +29,23 @@ let cleaned = false;
  * 明示的に呼ばなくてもプロセスは自然に終了する。
  */
 export function cleanupWpEnv(): void {
-    if (cleaned) return;
-    cleaned = true;
+    if (wpEnvCleaned) return;
+    wpEnvCleaned = true;
     window.happyDOM.abort();
 }
 
-// 呼び忘れによるハングを防止するため、イベントループ終了時に自動実行
+/**
+ * テスト用: プロセスイベントリスナーを解除し、クリーンアップフラグをリセットする。
+ * vitest で wp-env.ts を import するたびにリスナーが蓄積しないよう、
+ * afterEach 等で呼ぶことを想定している。
+ */
+export function _resetWpEnvForTest(): void {
+    process.removeListener('beforeExit', cleanupWpEnv);
+    wpEnvCleaned = false;
+}
+
+// happyDOM.abort() は非同期（Promise を返す）のため exit ではなく beforeExit を使用する。
+// 呼び忘れによるハングを防止するため、イベントループ終了時に自動実行。
 process.on('beforeExit', cleanupWpEnv);
 
 // @wordpress/blocks が参照する DOM API をグローバルに登録
