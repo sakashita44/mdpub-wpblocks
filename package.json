@@ -1,6 +1,6 @@
 {
     "name": "mdpub-wpblocks",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "Markdown を Gutenberg ブロックに変換し WordPress REST API 経由で投稿するツール",
     "type": "module",
     "bin": {
