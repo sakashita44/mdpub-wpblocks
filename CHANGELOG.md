@@ -7,6 +7,18 @@
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-02-20
+
+### Fixed
+
+- apiFetch のエラー情報（primary / fallback 両方）を `cause` チェーンで保持するよう修正 (#34)
+- `cleanupWpEnv` を `beforeExit` イベントで自動実行し、呼び忘れによるプロセスハングを防止 (#35)
+
+### Documentation
+
+- README に AI 生成プロジェクトである旨と免責事項を追記 (#33)
+- v2.0.0 向けドキュメント整備 (#33)
+
 ## [2.0.0] - 2026-02-18
 
 ### Breaking Changes

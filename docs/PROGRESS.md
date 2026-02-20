@@ -51,6 +51,12 @@
 - [x] #14 refactor: プラグイン自動検出・TypeScript 化
 - [x] #36 refactor: dotenv 導入
 
+### v2.0.1（バグ修正・ドキュメント）
+
+- [x] #34 fix: apiFetch のエラー情報を cause チェーンで保持
+- [x] #35 fix: cleanupWpEnv を beforeExit で自動実行
+- [x] #33 docs: v2.0.0 ドキュメント整備・免責事項追記
+
 ### 将来
 
 - 変換対応や公開ワークフロー改善は、必要が明確になった時点で Issue 化してから着手
