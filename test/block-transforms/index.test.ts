@@ -42,7 +42,9 @@ const x = 1;
         const unknownToken = mockToken({ type: 'unknown_custom_type' });
         transformTokens([unknownToken], noPlugins);
         expect(warnSpy).toHaveBeenCalledWith(
-            expect.stringContaining('未対応トークン'),
+            expect.stringMatching(
+                /^\[warn\] 未対応トークン: unknown_custom_type（スキップ）$/,
+            ),
         );
     });
 
@@ -61,7 +63,9 @@ const x = 1;
         const tokens = [mockToken({ type: 'paragraph_open' })];
         const blocks = transformTokens(tokens, noPlugins);
         expect(warnSpy).toHaveBeenCalledWith(
-            expect.stringContaining('paragraph_open'),
+            expect.stringMatching(
+                /^\[warn\] paragraph_open の後にトークンがありません$/,
+            ),
         );
         expect(blocks).toHaveLength(0);
     });
@@ -71,7 +75,9 @@ const x = 1;
         const tokens = [mockToken({ type: 'heading_open', tag: 'h2' })];
         const blocks = transformTokens(tokens, noPlugins);
         expect(warnSpy).toHaveBeenCalledWith(
-            expect.stringContaining('heading_open'),
+            expect.stringMatching(
+                /^\[warn\] heading_open の後にトークンがありません$/,
+            ),
         );
         expect(blocks).toHaveLength(0);
     });

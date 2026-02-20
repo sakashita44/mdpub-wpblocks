@@ -54,6 +54,14 @@ categories: []
             expect(tokens).toHaveLength(0);
         });
 
+        it('必須フィールド不足: エラーにならず部分的に返す', () => {
+            const md = `---\ntitle: テスト\n---\n本文`;
+            const { frontmatter } = parseMd(md);
+            expect(frontmatter.title).toBe('テスト');
+            expect(frontmatter.slug).toBeUndefined();
+            expect(frontmatter.categories).toBeUndefined();
+        });
+
         it('不正 YAML frontmatter: エラーをスロー', () => {
             // js-yaml は未クローズのフロー記法を不正として例外を投げる
             const md = `---
