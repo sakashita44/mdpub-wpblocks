@@ -81,4 +81,23 @@ const x = 1;
         );
         expect(blocks).toHaveLength(0);
     });
+
+    it('plugins に katex を含む場合、インライン数式を paragraph ブロック（[katex]ショートコード）に変換', () => {
+        const { tokens } = parseMd('$E = mc^2$');
+        const blocks = transformTokens(tokens, new Set(['katex']));
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/paragraph');
+        expect(String(blocks[0].attributes.content)).toBe(
+            '[katex]E = mc^2[/katex]',
+        );
+    });
+
+    it('段落が単独 URL の場合、embed ブロックに変換', () => {
+        const { tokens } = parseMd(
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        );
+        const blocks = transformTokens(tokens, new Set());
+        expect(blocks).toHaveLength(1);
+        expect(blocks[0].name).toBe('core/embed');
+    });
 });
