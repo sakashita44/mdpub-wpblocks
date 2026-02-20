@@ -101,4 +101,4 @@ Markdown → (md-parser) → AST → (block-transforms) → createBlock() → se
 
 - コメント・ドキュメントは日本語
 - Conventional Commits（日本語メッセージ可）
-- ブランチ: `feature/YYYYMM/sakashita44/<issue_num>-<内容>`
+- ブランチ: `<prefix>/YYYYMM/sakashita44/<issue_num>-<内容>`
