@@ -92,16 +92,16 @@ export function createWpClient({
                     // primary 失敗情報を保持しておく
                     const primaryUrl = url;
                     const primaryStatus = `${res.status} ${res.statusText}`;
+                    const primaryError = new Error(
+                        `WP API エラー (primary): ${primaryStatus}\n` +
+                            `  URL: ${primaryUrl}`,
+                    );
 
                     url = buildFallbackUrl(endpoint);
                     discoveredMode = 'fallback';
                     try {
                         res = await fetch(url, requestInit);
                     } catch (e) {
-                        const primaryError = new Error(
-                            `WP API エラー (primary): ${primaryStatus}\n` +
-                                `  URL: ${primaryUrl}`,
-                        );
                         throw new Error(
                             `ネットワークエラー (fallback): ${url}\n` +
                                 `  詳細: ${(e as Error).message || String(e)}`,
@@ -111,11 +111,7 @@ export function createWpClient({
 
                     // fallback も HTTP エラーの場合は primary 情報を cause に連鎖させる
                     if (!res.ok) {
-                        const fallbackBody = await res.text();
-                        const primaryError = new Error(
-                            `WP API エラー (primary): ${primaryStatus}\n` +
-                                `  URL: ${primaryUrl}`,
-                        );
+                        const fallbackBody = (await res.text()).slice(0, 500);
                         throw new Error(
                             `WP API エラー (fallback): ${res.status} ${res.statusText}\n` +
                                 `  URL: ${url}\n` +
