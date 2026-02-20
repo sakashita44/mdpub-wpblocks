@@ -21,7 +21,7 @@
         "prepare": "husky",
         "test": "vitest run",
         "lint": "eslint \"lib/**/*.ts\" \"scripts/**/*.ts\" \"test/**/*.ts\" \"bin/**/*.ts\" && markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#posts/upload-test\"",
-        "format": "prettier --write \"**/*.{ts,json,md}\" && eslint --fix \"lib/**/*.ts\" \"scripts/**/*.ts\" \"test/**/*.ts\" \"bin/**/*.ts\"",
+        "format": "prettier --write \"**/*.{ts,json,md}\" && eslint --fix \"lib/**/*.ts\" \"scripts/**/*.ts\" \"test/**/*.ts\" \"bin/**/*.ts\" && markdownlint-cli2 --fix \"**/*.md\" \"#node_modules\" \"#posts/upload-test\"",
         "fix": "npm run format && npm run lint"
     },
     "author": "sakashita44",
