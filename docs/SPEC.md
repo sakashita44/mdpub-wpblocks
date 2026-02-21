@@ -152,6 +152,24 @@ https://www.youtube.com/watch?v=xxxxx
 - `markdown-it-container` プラグインで `:::columns` をパース
 - 内部の各画像を個別の `core/column` に配置
 
+## API 互換性チェック
+
+`upload-media` / `publish` 実行時、`createWpClient` 直後に `checkApiCompatibility()` を呼び出し、WP REST API v2 が有効かを確認する。
+
+### 動作
+
+1. `GET /wp-json/` にリクエストを送信
+1. レスポンスの `namespaces` に `wp/v2` が含まれるか検証
+1. `/wp-json/` が 404 の場合は `?rest_route=/` にフォールバックして同じ検証を行う
+1. `wp/v2` が存在しない場合は即時エラー終了（WordPress 4.7+ が必要）
+
+### エラーケース
+
+| 状況                                 | エラーメッセージ                                                           |
+| ------------------------------------ | -------------------------------------------------------------------------- |
+| 両方の URL に接続できない            | `WordPress REST API に接続できません: <baseUrl>`                           |
+| `namespaces` に `wp/v2` が含まれない | `WP REST API v2 が有効でない可能性があります（WordPress 4.7+ が必要です）` |
+
 ## メディアアップロード仕様
 
 ### API

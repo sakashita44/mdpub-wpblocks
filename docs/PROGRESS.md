@@ -22,6 +22,8 @@
 └── #43 frontmatter バリデーション CLI ✅
     └── #44 画像パス・featured_image 実在チェック ✅
         └── #45 未対応トークン検出の構造化と validate-content 統合 ✅
+
+#24 WP REST API v2 互換性チェック ✅
 ```
 
 | Issue | タイトル                                  | 状態    | blocked by     | ブランチ                                             |
@@ -40,6 +42,7 @@
 | #43   | frontmatter バリデーション CLI            | ✅ done | -              | feat/202602/sakashita44/43-validate-frontmatter      |
 | #44   | 画像パス・featured_image 実在チェック     | ✅ done | #43 ✅         | feat/202602/sakashita44/44-validate-images           |
 | #45   | 未対応トークン検出・validate-content 統合 | ✅ done | #44 ✅         | feat/202602/sakashita44/45-validate-tokens           |
+| #24   | WP REST API v2 互換性チェック             | ✅ done | -              | feature/202602/sakashita44/24-wp-rest-api-v2-check   |
 
 ## 着手可能な Issue
 
@@ -64,6 +67,16 @@
 - [x] #34 fix: apiFetch のエラー情報を cause チェーンで保持
 - [x] #35 fix: cleanupWpEnv を beforeExit で自動実行
 - [x] #33 docs: v2.0.0 ドキュメント整備・免責事項追記
+
+### v2.1.0（コンテンツバリデーション）
+
+- [x] #43 frontmatter バリデーション CLI
+- [x] #44 画像パス・featured_image 実在チェック
+- [x] #45 未対応トークン検出・validate-content 統合
+
+### v2.2.0（API 互換性チェック）
+
+- [x] #24 WP REST API v2 互換性チェック
 
 ### 将来
 

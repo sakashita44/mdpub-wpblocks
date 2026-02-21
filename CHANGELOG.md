@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-02-22
+
+### Added
+
+- `publish` / `upload-media` 実行時に WP REST API v2 互換性チェックを追加。`GET /wp-json/` で `wp/v2` namespace を検証し、非対応の場合は明確なエラーメッセージで即時終了 (#24)
+- `/wp-json/` が 404 の場合は `?rest_route=/` にフォールバックして互換性チェックを継続 (#24)
+
 ## [2.1.0] - 2026-02-22
 
 ### Added
