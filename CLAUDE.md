@@ -25,12 +25,12 @@ npm run validate-content -- --strict "*/index.md"  # 未対応トークンもエ
 ```bash
 npm run fix       # format → lint を一括実行（推奨）
 npm run lint      # ESLint + markdownlint チェックのみ
-npm run format    # Prettier + ESLint 自動修正のみ
+npm run format    # Prettier + ESLint + markdownlint 自動修正のみ
 npm test          # 全テスト実行
 npm test -- <pattern>   # パターンに一致するテストのみ実行（例: "paragraph", "test/block-transforms/table.test.ts"）
 ```
 
-Prettier + ESLint + markdownlint を pre-commit フック（husky + lint-staged）で自動実行。
+Prettier + ESLint + markdownlint を pre-commit フック（husky + lint-staged）で自動実行。ただし pre-commit の markdownlint はチェックのみ（自動修正なし）。Markdown を編集してコミットに失敗した場合は `npm run fix` を実行する（例：順序付きリストの prefix `1. 2. 3.` → `1. 1. 1.`）。
 
 ## アーキテクチャ
 
