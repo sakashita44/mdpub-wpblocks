@@ -57,7 +57,7 @@ const plugins = loadPlugins(projectRoot);
 
 const markdownString = readFileSync(mdPath, 'utf-8');
 const { tokens } = parseMd(markdownString);
-const blocks = transformTokens(tokens, plugins);
+const { blocks } = transformTokens(tokens, plugins);
 const html = serialize(blocks);
 
 console.log(html);

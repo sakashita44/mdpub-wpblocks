@@ -108,6 +108,19 @@ export interface Frontmatter {
     [key: string]: unknown;
 }
 
+/** ブロック変換時の警告 */
+export interface TransformWarning {
+    type: 'unsupported_token' | 'unsupported_inline_token' | 'incomplete_token';
+    tokenType: string;
+    line?: number;
+}
+
+/** transformTokens の戻り値 */
+export interface TransformTokensResult {
+    blocks: Block[];
+    warnings: TransformWarning[];
+}
+
 /** extractOption の戻り値 */
 export interface ExtractOptionResult {
     value: string | undefined;

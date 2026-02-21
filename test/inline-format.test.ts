@@ -223,4 +223,50 @@ describe('renderInline', () => {
             'before <span class="x">ok</span> after',
         );
     });
+
+    it('image トークンを img タグに変換する', () => {
+        const imgToken = mockToken({
+            type: 'image',
+            content: 'alt text',
+            attrs: [
+                ['src', 'https://example.com/img.png'],
+                ['alt', ''],
+            ],
+        });
+        expect(renderInline([imgToken], noPlugins)).toBe(
+            '<img src="https://example.com/img.png" alt="alt text">',
+        );
+    });
+
+    it('テキストと画像が混在する段落を描画する', () => {
+        const tokens = [
+            mockTextToken('see '),
+            mockToken({
+                type: 'image',
+                content: 'photo',
+                attrs: [
+                    ['src', 'img.jpg'],
+                    ['alt', ''],
+                ],
+            }),
+            mockTextToken(' here'),
+        ];
+        expect(renderInline(tokens, noPlugins)).toBe(
+            'see <img src="img.jpg" alt="photo"> here',
+        );
+    });
+
+    it('image の src と alt を HTML エスケープする', () => {
+        const imgToken = mockToken({
+            type: 'image',
+            content: 'a "quoted" & <alt>',
+            attrs: [
+                ['src', 'img.jpg?a=1&b=2'],
+                ['alt', ''],
+            ],
+        });
+        expect(renderInline([imgToken], noPlugins)).toBe(
+            '<img src="img.jpg?a=1&amp;b=2" alt="a &quot;quoted&quot; &amp; &lt;alt&gt;">',
+        );
+    });
 });

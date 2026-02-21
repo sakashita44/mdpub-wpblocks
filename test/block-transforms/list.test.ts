@@ -174,7 +174,7 @@ describe('transformList', () => {
 
     it('loose list の複数段落を保持する', () => {
         const { tokens } = parseMd('- para1\n\n  para2');
-        const blocks = transformTokens(tokens, new Set());
+        const { blocks } = transformTokens(tokens, new Set());
 
         expect(blocks).toHaveLength(1);
         expect(blocks[0].name).toBe('core/list');

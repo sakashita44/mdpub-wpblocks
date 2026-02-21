@@ -114,7 +114,7 @@ function printHelp(stream: NodeJS.WritableStream = process.stdout): void {
         '  publish           記事を WordPress に draft 投稿',
         '  pipeline          sync → convert → upload-media → publish を実行',
         '  sync              WP プラグイン情報を .mdpub-cache.json に同期',
-        '  validate-content  frontmatter バリデーション',
+        '  validate-content  コンテンツバリデーション（frontmatter・画像・トークン）',
         '',
         'オプション:',
         '  -h, --help     ヘルプ表示',

@@ -72,10 +72,18 @@ export function renderInline(
             case 'hardbreak':
                 parts.push('<br>');
                 break;
-            default:
-                console.warn(
-                    `[warn] 未対応インライントークン: ${token.type}（スキップ）`,
+            case 'image': {
+                const src = token.attrGet('src') || '';
+                const alt = token.content || '';
+                parts.push(
+                    `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">`,
                 );
+                break;
+            }
+            default:
+                // 未対応インライントークンはスキップ
+                // validate-content CLI で事前検出可能、
+                // transformTokens でも warnings として収集される
                 break;
         }
     }

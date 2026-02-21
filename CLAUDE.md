@@ -18,7 +18,8 @@ npm run convert -- posts/my-article/index.md   # MD → ブロック HTML（stdo
 npm run upload-media -- posts/my-article/      # 画像アップロード
 npm run publish -- posts/my-article/index.md   # 記事投稿（新規作成 or 更新）
 npm run pipeline -- posts/my-article/          # sync → convert → upload-media → publish を一括実行
-npm run validate-content -- "*/index.md"       # frontmatter バリデーション
+npm run validate-content -- "*/index.md"       # コンテンツバリデーション
+npm run validate-content -- --strict "*/index.md"  # 未対応トークンもエラー扱い
 ```
 
 ```bash
@@ -53,6 +54,8 @@ Markdown → (md-parser) → AST → (block-transforms) → createBlock() → se
 - `lib/media-slug.ts` — ローカルパス → WP メディア slug 算出（純粋関数）
 - `lib/validate-frontmatter.ts` — frontmatter バリデーション（全エラー収集、lint 用途）
 - `lib/validate-images.ts` — 画像パス・featured_image 実在チェック（`statSync` でファイル種別検証）
+- `lib/validate-tokens.ts` — 未対応トークン検出（wp-env 非依存、validate-content から利用）
+- `lib/block-transforms/token-types.ts` — トークンタイプ分類定数（`HANDLED_TOKEN_TYPES`, `CONSUMED_TOKEN_TYPES`）
 - `lib/publish-utils.ts` — フロントマター検証（throw 型）、画像 URL 置換、投稿ペイロード構築
 - `lib/cli-config.ts` — CLI 引数パース + コンテンツルートパス解決
 - `lib/env.ts` — `.env` ファイル読み込み（`initEnv()` を他に先駆けて呼ぶ）

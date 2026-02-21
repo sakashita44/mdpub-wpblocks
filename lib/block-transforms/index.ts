@@ -6,8 +6,11 @@
  */
 
 import type Token from 'markdown-it/lib/token.mjs';
-import type { Block } from '@wordpress/blocks';
-import type { TransformDeps } from '../types.js';
+import type {
+    TransformDeps,
+    TransformTokensResult,
+    TransformWarning,
+} from '../types.js';
 
 import { createBlock } from '../wp-env.js';
 import { renderInline as renderInlineBase } from '../inline-format.js';
@@ -21,34 +24,19 @@ import { extractDisplayMath, transformDisplayMath } from '../plugins/katex.js';
 import { extractStandaloneUrl, transformEmbed } from './embed.js';
 import { transformHtml } from './html.js';
 import { transformColumns } from './columns.js';
+import { CONSUMED_TOKEN_TYPES, HANDLED_INLINE_TYPES } from './token-types.js';
 
-// switch case で消費済みのためスキップすべきトークン
-const CONSUMED_TOKEN_TYPES = new Set([
-    'paragraph_close',
-    'heading_close',
-    'inline',
-    'thead_open',
-    'thead_close',
-    'tbody_open',
-    'tbody_close',
-    'tr_open',
-    'tr_close',
-    'th_open',
-    'th_close',
-    'td_open',
-    'td_close',
-    'list_item_open',
-    'list_item_close',
-    'ordered_list_close',
-    'bullet_list_close',
-    'container_columns_close',
-]);
+export {
+    HANDLED_TOKEN_TYPES,
+    CONSUMED_TOKEN_TYPES,
+    HANDLED_INLINE_TYPES,
+} from './token-types.js';
 
 /** markdown-it トークン配列を Gutenberg ブロック配列に変換 */
 export function transformTokens(
     tokens: Token[],
     plugins: Set<string>,
-): Block[] {
+): TransformTokensResult {
     const renderInline = (children: Token[] | null): string =>
         renderInlineBase(children, plugins);
 
@@ -58,19 +46,41 @@ export function transformTokens(
         plugins,
     };
 
-    const blocks: Block[] = [];
+    /** inline トークンの children から未対応トークンを収集 */
+    const collectInlineWarnings = (inlineToken: Token): void => {
+        if (!inlineToken.children) return;
+        for (const child of inlineToken.children) {
+            if (!HANDLED_INLINE_TYPES.has(child.type)) {
+                warnings.push({
+                    type: 'unsupported_inline_token',
+                    tokenType: child.type,
+                    line: inlineToken.map?.[0],
+                });
+            }
+        }
+    };
+
+    const blocks: TransformTokensResult['blocks'] = [];
+    const warnings: TransformWarning[] = [];
     let i = 0;
 
     while (i < tokens.length) {
         const token = tokens[i];
 
+        // inline トークンの children を検査
+        if (token.type === 'inline') {
+            collectInlineWarnings(token);
+        }
+
         switch (token.type) {
             // 段落: paragraph_open → inline → paragraph_close（3 トークン消費）
             case 'paragraph_open': {
                 if (i + 1 >= tokens.length) {
-                    console.warn(
-                        '[warn] paragraph_open の後にトークンがありません',
-                    );
+                    warnings.push({
+                        type: 'incomplete_token',
+                        tokenType: 'paragraph_open',
+                        line: token.map?.[0],
+                    });
                     i += 1;
                     break;
                 }
@@ -114,9 +124,11 @@ export function transformTokens(
             // 見出し: heading_open → inline → heading_close（3 トークン消費）
             case 'heading_open': {
                 if (i + 1 >= tokens.length) {
-                    console.warn(
-                        '[warn] heading_open の後にトークンがありません',
-                    );
+                    warnings.push({
+                        type: 'incomplete_token',
+                        tokenType: 'heading_open',
+                        line: token.map?.[0],
+                    });
                     i += 1;
                     break;
                 }
@@ -169,14 +181,16 @@ export function transformTokens(
 
             default:
                 if (!CONSUMED_TOKEN_TYPES.has(token.type)) {
-                    console.warn(
-                        `[warn] 未対応トークン: ${token.type}（スキップ）`,
-                    );
+                    warnings.push({
+                        type: 'unsupported_token',
+                        tokenType: token.type,
+                        line: token.map?.[0],
+                    });
                 }
                 i += 1;
                 break;
         }
     }
 
-    return blocks;
+    return { blocks, warnings };
 }
