@@ -242,6 +242,29 @@ https://www.youtube.com/watch?v=xxxxx
 1. `GET /wp/v2/media?slug=<slug>` でメディア URL を取得
 1. ブロック HTML 内のローカルパスを取得した URL に置換
 
+## コンテンツバリデーション
+
+`validate-content` コマンドは、指定 glob にマッチする Markdown ファイルを検証し、投稿前の問題を検出する。
+
+```bash
+npm run validate-content -- [--content-root <path>] <glob>
+mdpub validate-content [--content-root <path>] <glob>
+```
+
+### チェック項目
+
+| カテゴリ       | チェック内容                                                 |
+| -------------- | ------------------------------------------------------------ |
+| frontmatter    | `title`, `slug`, `categories` の必須・型チェック             |
+| frontmatter    | `tags` の型チェック（省略可）                                |
+| frontmatter    | `slug` とディレクトリ名の一致                                |
+| 画像パス       | 本文中の `![alt](path)` の相対パスがファイルとして存在するか |
+| featured_image | frontmatter の `featured_image` がファイルとして存在するか   |
+
+- 外部 URL（`https://...`）の画像参照は検証対象外（ネットワーク検証は行わない）
+- パス解決は記事ファイルのディレクトリ（`dirname(mdPath)`）を基準とする
+- ディレクトリパスはファイルとして認識しない（`statSync().isFile()` で判定）
+
 ## E2E 統合・CLI 仕上げ
 
 ### 統合実行モード

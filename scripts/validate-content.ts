@@ -12,6 +12,10 @@ import {
     validateFrontmatterAll,
     validateSlugDirMatch,
 } from '../lib/validate-frontmatter.js';
+import {
+    validateImagePaths,
+    validateFeaturedImage,
+} from '../lib/validate-images.js';
 import { extractOption, resolveContentRoot } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
 
@@ -60,7 +64,7 @@ let hasErrors = false;
 for (const filePath of files) {
     const mdPath = resolve(filePath);
     const content = readFileSync(mdPath, 'utf-8');
-    const { frontmatter } = parseMd(content);
+    const { frontmatter, body } = parseMd(content);
 
     const errors = validateFrontmatterAll(frontmatter);
 
@@ -70,6 +74,15 @@ for (const filePath of files) {
         const slugError = validateSlugDirMatch(fm.slug, mdPath);
         if (slugError) {
             errors.push(slugError);
+        }
+    }
+
+    // 画像パス実在チェック（frontmatter を除いた本文のみ対象）
+    errors.push(...validateImagePaths(body, mdPath));
+    if (fm) {
+        const featuredError = validateFeaturedImage(fm, mdPath);
+        if (featuredError) {
+            errors.push(featuredError);
         }
     }
 
@@ -85,8 +98,8 @@ for (const filePath of files) {
 }
 
 if (hasErrors) {
-    console.error('\nfrontmatter バリデーションに失敗しました');
+    console.error('\nコンテンツバリデーションに失敗しました');
     process.exit(1);
 }
 
-console.log('\n全ファイルの frontmatter バリデーションに成功しました');
+console.log('\n全ファイルのコンテンツバリデーションに成功しました');

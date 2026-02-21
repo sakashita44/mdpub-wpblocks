@@ -44,7 +44,7 @@ Markdown → (md-parser) → AST → (block-transforms) → createBlock() → se
 ### モジュール構成
 
 - `lib/wp-env.ts` — DOM ポリフィル + `@wordpress/blocks` 初期化。**他の全モジュールより先に import する必要がある**
-- `lib/md-parser.ts` — markdown-it による AST 生成 + gray-matter でフロントマター抽出
+- `lib/md-parser.ts` — markdown-it による AST 生成 + gray-matter でフロントマター・本文抽出
 - `lib/block-transforms/index.ts` — トークン配列を走査してブロック変換を振り分けるディスパッチャ
 - `lib/block-transforms/*.ts` — 各ブロック種別の変換ロジック（paragraph, heading, code, table, list, image, embed, html, columns）
 - `lib/inline-format.ts` — インライン要素（bold, italic, link）の HTML 変換
@@ -52,6 +52,7 @@ Markdown → (md-parser) → AST → (block-transforms) → createBlock() → se
 - `lib/wp-client.ts` — WordPress REST API クライアント（Basic 認証）
 - `lib/media-slug.ts` — ローカルパス → WP メディア slug 算出（純粋関数）
 - `lib/validate-frontmatter.ts` — frontmatter バリデーション（全エラー収集、lint 用途）
+- `lib/validate-images.ts` — 画像パス・featured_image 実在チェック（`statSync` でファイル種別検証）
 - `lib/publish-utils.ts` — フロントマター検証（throw 型）、画像 URL 置換、投稿ペイロード構築
 - `lib/cli-config.ts` — CLI 引数パース + コンテンツルートパス解決
 - `lib/env.ts` — `.env` ファイル読み込み（`initEnv()` を他に先駆けて呼ぶ）
