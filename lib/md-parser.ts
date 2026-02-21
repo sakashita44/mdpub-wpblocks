@@ -23,12 +23,13 @@ md.enable('strikethrough');
 
 md.use(markdownItContainer, 'columns');
 
-/** Markdown 文字列をパースし frontmatter とトークン配列を返す */
+/** Markdown 文字列をパースし frontmatter・本文・トークン配列を返す */
 export function parseMd(markdownString: string): {
     frontmatter: Frontmatter;
+    body: string;
     tokens: Token[];
 } {
     const { data: frontmatter, content: body } = matter(markdownString);
     const tokens = md.parse(body, {});
-    return { frontmatter: frontmatter as Frontmatter, tokens };
+    return { frontmatter: frontmatter as Frontmatter, body, tokens };
 }

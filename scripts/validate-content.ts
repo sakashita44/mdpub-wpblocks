@@ -64,7 +64,7 @@ let hasErrors = false;
 for (const filePath of files) {
     const mdPath = resolve(filePath);
     const content = readFileSync(mdPath, 'utf-8');
-    const { frontmatter } = parseMd(content);
+    const { frontmatter, body } = parseMd(content);
 
     const errors = validateFrontmatterAll(frontmatter);
 
@@ -77,8 +77,8 @@ for (const filePath of files) {
         }
     }
 
-    // 画像パス実在チェック
-    errors.push(...validateImagePaths(content, mdPath));
+    // 画像パス実在チェック（frontmatter を除いた本文のみ対象）
+    errors.push(...validateImagePaths(body, mdPath));
     if (fm) {
         const featuredError = validateFeaturedImage(fm, mdPath);
         if (featuredError) {
