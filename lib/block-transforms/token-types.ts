@@ -40,6 +40,7 @@ export const CONSUMED_TOKEN_TYPES = new Set([
     'paragraph_close',
     'heading_close',
     'inline',
+    'table_close',
     'thead_open',
     'thead_close',
     'tbody_open',
