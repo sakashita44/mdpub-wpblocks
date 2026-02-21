@@ -72,6 +72,14 @@ export function renderInline(
             case 'hardbreak':
                 parts.push('<br>');
                 break;
+            case 'image': {
+                const src = token.attrGet('src') || '';
+                const alt = token.content || '';
+                parts.push(
+                    `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">`,
+                );
+                break;
+            }
             default:
                 // 未対応インライントークンはスキップ
                 // validate-content CLI で事前検出可能、
