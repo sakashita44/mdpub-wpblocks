@@ -98,10 +98,16 @@ for (const filePath of files) {
 
     // 未対応トークン検出
     const tokenWarnings = collectUnsupportedTokens(tokens);
-    const tokenValidationItems: ValidationError[] = tokenWarnings.map((w) => ({
-        field: 'token',
-        message: `未対応トークン: ${w.tokenType}${w.line != null ? `（行 ${w.line + 1}）` : ''}`,
-    }));
+    const tokenValidationItems: ValidationError[] = tokenWarnings.map((w) => {
+        const label =
+            w.type === 'unsupported_inline_token'
+                ? '未対応インライントークン'
+                : '未対応トークン';
+        return {
+            field: 'token',
+            message: `${label}: ${w.tokenType}${w.line != null ? `（行 ${w.line + 1}）` : ''}`,
+        };
+    });
 
     if (errors.length > 0) {
         hasErrors = true;

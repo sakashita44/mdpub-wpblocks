@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { collectUnsupportedTokens } from '../lib/validate-tokens.js';
-import { mockToken } from './helpers/mock-token.js';
+import { mockToken, mockInlineToken } from './helpers/mock-token.js';
 
 describe('collectUnsupportedTokens', () => {
     it('未対応トークンを検出する', () => {
@@ -52,5 +52,53 @@ describe('collectUnsupportedTokens', () => {
 
     it('空のトークン配列は空配列を返す', () => {
         expect(collectUnsupportedTokens([])).toHaveLength(0);
+    });
+
+    it('inline children の未対応トークンを検出する', () => {
+        const tokens = [
+            mockInlineToken([
+                mockToken({ type: 'text', content: 'hello' }),
+                mockToken({ type: 'footnote_ref' }),
+            ]),
+        ];
+        // inline トークン自体に map を設定
+        tokens[0].map = [5, 6];
+
+        const warnings = collectUnsupportedTokens(tokens);
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toEqual({
+            type: 'unsupported_inline_token',
+            tokenType: 'footnote_ref',
+            line: 5,
+        });
+    });
+
+    it('inline children の対応済みトークンは警告しない', () => {
+        const tokens = [
+            mockInlineToken([
+                mockToken({ type: 'text', content: 'hello' }),
+                mockToken({ type: 'strong_open' }),
+                mockToken({ type: 'text', content: 'bold' }),
+                mockToken({ type: 'strong_close' }),
+                mockToken({ type: 'code_inline', content: 'code' }),
+                mockToken({ type: 'softbreak' }),
+                mockToken({ type: 'image' }),
+            ]),
+        ];
+        const warnings = collectUnsupportedTokens(tokens);
+        expect(warnings).toHaveLength(0);
+    });
+
+    it('トップレベルとインライン両方の未対応トークンを同時に検出する', () => {
+        const tokens = [
+            mockToken({ type: 'unknown_block', map: [1, 2] }),
+            mockInlineToken([mockToken({ type: 'unknown_inline' })]),
+        ];
+        tokens[1].map = [3, 4];
+
+        const warnings = collectUnsupportedTokens(tokens);
+        expect(warnings).toHaveLength(2);
+        expect(warnings[0].type).toBe('unsupported_token');
+        expect(warnings[1].type).toBe('unsupported_inline_token');
     });
 });

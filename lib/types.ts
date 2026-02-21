@@ -110,7 +110,7 @@ export interface Frontmatter {
 
 /** ブロック変換時の警告 */
 export interface TransformWarning {
-    type: 'unsupported_token' | 'incomplete_token';
+    type: 'unsupported_token' | 'unsupported_inline_token' | 'incomplete_token';
     tokenType: string;
     line?: number;
 }

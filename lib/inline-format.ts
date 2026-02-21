@@ -73,9 +73,8 @@ export function renderInline(
                 parts.push('<br>');
                 break;
             default:
-                console.warn(
-                    `[warn] 未対応インライントークン: ${token.type}（スキップ）`,
-                );
+                // 未対応インライントークンはスキップ
+                // validate-tokens.ts で事前検出済み
                 break;
         }
     }

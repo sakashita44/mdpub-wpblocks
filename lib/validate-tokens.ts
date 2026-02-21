@@ -11,9 +11,10 @@ import type { TransformWarning } from './types.js';
 import {
     HANDLED_TOKEN_TYPES,
     CONSUMED_TOKEN_TYPES,
+    HANDLED_INLINE_TYPES,
 } from './block-transforms/token-types.js';
 
-/** トークン配列から未対応トークンを収集 */
+/** トークン配列から未対応トークンを収集（inline children 含む） */
 export function collectUnsupportedTokens(tokens: Token[]): TransformWarning[] {
     const warnings: TransformWarning[] = [];
 
@@ -27,6 +28,19 @@ export function collectUnsupportedTokens(tokens: Token[]): TransformWarning[] {
                 tokenType: token.type,
                 line: token.map?.[0],
             });
+        }
+
+        // inline トークンの children を検査
+        if (token.type === 'inline' && token.children) {
+            for (const child of token.children) {
+                if (!HANDLED_INLINE_TYPES.has(child.type)) {
+                    warnings.push({
+                        type: 'unsupported_inline_token',
+                        tokenType: child.type,
+                        line: token.map?.[0],
+                    });
+                }
+            }
         }
     }
 

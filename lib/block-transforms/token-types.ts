@@ -17,6 +17,24 @@ export const HANDLED_TOKEN_TYPES = new Set([
     'container_columns_open',
 ]);
 
+/** inline-format.ts で処理するインライントークン */
+export const HANDLED_INLINE_TYPES = new Set([
+    'text',
+    'html_inline',
+    'strong_open',
+    'strong_close',
+    'em_open',
+    'em_close',
+    'code_inline',
+    'link_open',
+    'link_close',
+    's_open',
+    's_close',
+    'softbreak',
+    'hardbreak',
+    'image',
+]);
+
 /** switch case で消費済みのためスキップすべきトークン */
 export const CONSUMED_TOKEN_TYPES = new Set([
     'paragraph_close',
