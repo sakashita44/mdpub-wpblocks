@@ -12,6 +12,10 @@ import {
     validateFrontmatterAll,
     validateSlugDirMatch,
 } from '../lib/validate-frontmatter.js';
+import {
+    validateImagePaths,
+    validateFeaturedImage,
+} from '../lib/validate-images.js';
 import { extractOption, resolveContentRoot } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
 
@@ -73,6 +77,15 @@ for (const filePath of files) {
         }
     }
 
+    // 画像パス実在チェック
+    errors.push(...validateImagePaths(content, mdPath));
+    if (fm) {
+        const featuredError = validateFeaturedImage(fm, mdPath);
+        if (featuredError) {
+            errors.push(featuredError);
+        }
+    }
+
     if (errors.length > 0) {
         hasErrors = true;
         console.error(`\n❌ ${mdPath}`);
@@ -85,8 +98,8 @@ for (const filePath of files) {
 }
 
 if (hasErrors) {
-    console.error('\nfrontmatter バリデーションに失敗しました');
+    console.error('\nコンテンツバリデーションに失敗しました');
     process.exit(1);
 }
 
-console.log('\n全ファイルの frontmatter バリデーションに成功しました');
+console.log('\n全ファイルのコンテンツバリデーションに成功しました');
