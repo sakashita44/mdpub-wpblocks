@@ -91,7 +91,7 @@ try {
     const plugins = loadPlugins(projectRoot);
 
     const { tokens } = parseMd(body);
-    const blocks = transformTokens(tokens, plugins);
+    const { blocks } = transformTokens(tokens, plugins);
     const rawHtml = serialize(blocks);
 
     const resolvedImageMap = await resolveImageUrlMap(wp, body, articleSlug);
