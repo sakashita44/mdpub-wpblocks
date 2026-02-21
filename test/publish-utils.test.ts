@@ -24,19 +24,19 @@ describe('validateFrontmatter', () => {
     it('title 未指定でエラー', () => {
         expect(() =>
             validateFrontmatter({ slug: 'article-a', categories: ['diary'] }),
-        ).toThrow('frontmatter.title は必須です');
+        ).toThrow('title は必須の文字列です');
     });
 
     it('slug 未指定でエラー', () => {
         expect(() =>
             validateFrontmatter({ title: '記事', categories: ['diary'] }),
-        ).toThrow('frontmatter.slug は必須です');
+        ).toThrow('slug は必須の文字列です');
     });
 
     it('categories 未指定でエラー', () => {
         expect(() =>
             validateFrontmatter({ title: '記事', slug: 'article-a' }),
-        ).toThrow('frontmatter.categories は1件以上の文字列配列で必須です');
+        ).toThrow('categories は必須の文字列配列です');
     });
 });
 

@@ -7,6 +7,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `validate-content` コマンド: frontmatter バリデーション CLI (#43)
+
 ## [2.0.1] - 2026-02-20
 
 ### Fixed
