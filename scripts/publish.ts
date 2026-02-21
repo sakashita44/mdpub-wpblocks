@@ -87,6 +87,7 @@ try {
 
     const articleSlug: string = frontmatter.slug;
     const wp = createWpClient(config);
+    await wp.checkApiCompatibility();
 
     const plugins = loadPlugins(projectRoot);
 

@@ -82,6 +82,7 @@ export interface MdpubCache {
 
 /** WP REST API クライアントのインターフェース */
 export interface WpClient {
+    checkApiCompatibility(): Promise<void>;
     findMediaBySlug(slug: string): Promise<WpMedia | null>;
     findPostBySlug(slug: string): Promise<WpPost | null>;
     findCategoryBySlug(slug: string): Promise<WpTerm | null>;

@@ -135,6 +135,13 @@ try {
 
 const wp = createWpClient(config);
 
+try {
+    await wp.checkApiCompatibility();
+} catch (e) {
+    console.error(`❌ ${(e as Error).message}`);
+    process.exit(1);
+}
+
 // --- アップロード実行 ---
 console.log(`\n📁 記事: ${articleSlug}`);
 console.log(`📷 画像: ${images.length} 件`);
