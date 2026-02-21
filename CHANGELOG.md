@@ -11,10 +11,12 @@
 
 - `validate-content` コマンド: frontmatter バリデーション CLI (#43)
 - `validate-content` に画像パス・`featured_image` 実在チェックを追加 (#44)
+- `validate-content` に未対応トークン検出を追加。`--strict` フラグでエラー扱い (#45)
 
 ### Changed
 
 - `parseMd` の戻り値に `body`（frontmatter 除去後の本文）を追加 (#44)
+- `transformTokens` の戻り値を `{ blocks, warnings }` に構造化。`console.warn` を廃止 (#45)
 
 ## [2.0.1] - 2026-02-20
 

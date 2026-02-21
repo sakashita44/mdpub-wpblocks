@@ -21,23 +21,25 @@
 #27 content lint
 └── #43 frontmatter バリデーション CLI ✅
     └── #44 画像パス・featured_image 実在チェック ✅
+        └── #45 未対応トークン検出の構造化と validate-content 統合 ✅
 ```
 
-| Issue | タイトル                              | 状態    | blocked by     | ブランチ                                             |
-| ----- | ------------------------------------- | ------- | -------------- | ---------------------------------------------------- |
-| #1    | DOM 環境 + @wordpress/blocks 初期化   | ✅ done | -              | - (merged)                                           |
-| #3    | MD パーサ + 基本ブロック変換          | ✅ done | #1 ✅          | - (merged)                                           |
-| #4    | テーブル・リスト・画像ブロック変換    | ✅ done | #3             | feature/202602/sakashita44/4-table-list-image-blocks |
-| #5    | 数式・Embed・HTML・カラム変換         | ✅ done | #3             | feature/202602/sakashita44/5-math-embed-html-columns |
-| #6    | メディアアップロード                  | ✅ done | #1 ✅          | feature/202602/sakashita44/6-media-upload            |
-| #7    | 記事投稿 (publish)                    | ✅ done | #3, #6         | feature/202602/sakashita44/7-article-publish         |
-| #8    | E2E 統合・CLI 仕上げ                  | ✅ done | #4, #5, #6, #7 | feature/202602/sakashita44/8-e2e-cli-finish          |
-| #17   | docs: ドキュメント整備                | ✅ done | #8             | issue17-docs                                         |
-| #19   | feat: CLI bin化と init 導入           | ✅ done | #17            | feature/202602/sakashita44/19-cli-bin-init           |
-| #14   | プラグイン自動検出・TypeScript 化     | ✅ done | #19            | feature/202602/sakashita44/14-plugin-detect-ts       |
-| #36   | dotenv 導入                           | ✅ done | #14            | feature/202602/sakashita44/36-dotenv-replace         |
-| #43   | frontmatter バリデーション CLI        | ✅ done | -              | feat/202602/sakashita44/43-validate-frontmatter      |
-| #44   | 画像パス・featured_image 実在チェック | ✅ done | #43 ✅         | feat/202602/sakashita44/44-validate-images           |
+| Issue | タイトル                                  | 状態    | blocked by     | ブランチ                                             |
+| ----- | ----------------------------------------- | ------- | -------------- | ---------------------------------------------------- |
+| #1    | DOM 環境 + @wordpress/blocks 初期化       | ✅ done | -              | - (merged)                                           |
+| #3    | MD パーサ + 基本ブロック変換              | ✅ done | #1 ✅          | - (merged)                                           |
+| #4    | テーブル・リスト・画像ブロック変換        | ✅ done | #3             | feature/202602/sakashita44/4-table-list-image-blocks |
+| #5    | 数式・Embed・HTML・カラム変換             | ✅ done | #3             | feature/202602/sakashita44/5-math-embed-html-columns |
+| #6    | メディアアップロード                      | ✅ done | #1 ✅          | feature/202602/sakashita44/6-media-upload            |
+| #7    | 記事投稿 (publish)                        | ✅ done | #3, #6         | feature/202602/sakashita44/7-article-publish         |
+| #8    | E2E 統合・CLI 仕上げ                      | ✅ done | #4, #5, #6, #7 | feature/202602/sakashita44/8-e2e-cli-finish          |
+| #17   | docs: ドキュメント整備                    | ✅ done | #8             | issue17-docs                                         |
+| #19   | feat: CLI bin化と init 導入               | ✅ done | #17            | feature/202602/sakashita44/19-cli-bin-init           |
+| #14   | プラグイン自動検出・TypeScript 化         | ✅ done | #19            | feature/202602/sakashita44/14-plugin-detect-ts       |
+| #36   | dotenv 導入                               | ✅ done | #14            | feature/202602/sakashita44/36-dotenv-replace         |
+| #43   | frontmatter バリデーション CLI            | ✅ done | -              | feat/202602/sakashita44/43-validate-frontmatter      |
+| #44   | 画像パス・featured_image 実在チェック     | ✅ done | #43 ✅         | feat/202602/sakashita44/44-validate-images           |
+| #45   | 未対応トークン検出・validate-content 統合 | ✅ done | #44 ✅         | feat/202602/sakashita44/45-validate-tokens           |
 
 ## 着手可能な Issue
 

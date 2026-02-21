@@ -247,8 +247,8 @@ https://www.youtube.com/watch?v=xxxxx
 `validate-content` コマンドは、指定 glob にマッチする Markdown ファイルを検証し、投稿前の問題を検出する。
 
 ```bash
-npm run validate-content -- [--content-root <path>] <glob>
-mdpub validate-content [--content-root <path>] <glob>
+npm run validate-content -- [--content-root <path>] [--strict] <glob>
+mdpub validate-content [--content-root <path>] [--strict] <glob>
 ```
 
 ### チェック項目
@@ -260,10 +260,12 @@ mdpub validate-content [--content-root <path>] <glob>
 | frontmatter    | `slug` とディレクトリ名の一致                                |
 | 画像パス       | 本文中の `![alt](path)` の相対パスがファイルとして存在するか |
 | featured_image | frontmatter の `featured_image` がファイルとして存在するか   |
+| token          | 未対応の markdown-it トークンが含まれていないか              |
 
 - 外部 URL（`https://...`）の画像参照は検証対象外（ネットワーク検証は行わない）
 - パス解決は記事ファイルのディレクトリ（`dirname(mdPath)`）を基準とする
 - ディレクトリパスはファイルとして認識しない（`statSync().isFile()` で判定）
+- `--strict` 指定時: 未対応トークンをエラー扱い（exit code 1）。未指定時は警告のみ（exit code に影響しない）
 
 ## E2E 統合・CLI 仕上げ
 
