@@ -1,0 +1,9 @@
+{
+    // markdownlint 設定は既存の .markdownlint.jsonc を継承
+    "config": {
+        "extends": ".markdownlint.jsonc"
+    },
+    // 記事コンテンツ（index.md）は lint 対象外
+    // embed ブロック変換に裸の URL が必要なため、MD034 等の制約と相容れない
+    "ignores": ["posts/**/index.md"]
+}
