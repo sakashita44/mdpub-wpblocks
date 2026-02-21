@@ -13,6 +13,7 @@ const subcommands = new Map<string, string>([
     ['publish', 'dist/scripts/publish.js'],
     ['pipeline', 'dist/scripts/pipeline.js'],
     ['sync', 'dist/scripts/sync.js'],
+    ['validate-content', 'dist/scripts/validate-content.js'],
 ]);
 
 const [command, ...args] = process.argv.slice(2);
@@ -107,12 +108,13 @@ function printHelp(stream: NodeJS.WritableStream = process.stdout): void {
         '  mdpub <subcommand> [options]',
         '',
         'サブコマンド:',
-        '  init          .env.example の雛形を生成',
-        '  convert       Markdown を Gutenberg ブロック HTML に変換',
-        '  upload-media  記事画像を WordPress へアップロード',
-        '  publish       記事を WordPress に draft 投稿',
-        '  pipeline      sync → convert → upload-media → publish を実行',
-        '  sync          WP プラグイン情報を .mdpub-cache.json に同期',
+        '  init              .env.example の雛形を生成',
+        '  convert           Markdown を Gutenberg ブロック HTML に変換',
+        '  upload-media      記事画像を WordPress へアップロード',
+        '  publish           記事を WordPress に draft 投稿',
+        '  pipeline          sync → convert → upload-media → publish を実行',
+        '  sync              WP プラグイン情報を .mdpub-cache.json に同期',
+        '  validate-content  frontmatter バリデーション',
         '',
         'オプション:',
         '  -h, --help     ヘルプ表示',

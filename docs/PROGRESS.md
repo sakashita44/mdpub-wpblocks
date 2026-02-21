@@ -17,6 +17,9 @@
 #14 プラグイン自動検出・TypeScript 化 ✅
 #36 dotenv 導入 ✅
   └──→ v2.0.0
+
+#27 content lint
+└── #43 frontmatter バリデーション CLI ✅
 ```
 
 | Issue | タイトル                            | 状態    | blocked by     | ブランチ                                             |
@@ -32,6 +35,7 @@
 | #19   | feat: CLI bin化と init 導入         | ✅ done | #17            | feature/202602/sakashita44/19-cli-bin-init           |
 | #14   | プラグイン自動検出・TypeScript 化   | ✅ done | #19            | feature/202602/sakashita44/14-plugin-detect-ts       |
 | #36   | dotenv 導入                         | ✅ done | #14            | feature/202602/sakashita44/36-dotenv-replace         |
+| #43   | frontmatter バリデーション CLI      | ✅ done | -              | feat/202602/sakashita44/43-validate-frontmatter      |
 
 ## 着手可能な Issue
 

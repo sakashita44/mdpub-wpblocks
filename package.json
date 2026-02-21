@@ -14,6 +14,7 @@
         "publish": "node dist/scripts/publish.js",
         "pipeline": "node dist/scripts/pipeline.js",
         "sync": "node dist/scripts/sync.js",
+        "validate-content": "node dist/scripts/validate-content.js",
         "wp:start": "wp-env start",
         "wp:stop": "wp-env stop",
         "wp:destroy": "wp-env destroy",
