@@ -10,6 +10,11 @@
 ### Added
 
 - `validate-content` コマンド: frontmatter バリデーション CLI (#43)
+- `validate-content` に画像パス・`featured_image` 実在チェックを追加 (#44)
+
+### Changed
+
+- `parseMd` の戻り値に `body`（frontmatter 除去後の本文）を追加 (#44)
 
 ## [2.0.1] - 2026-02-20
 

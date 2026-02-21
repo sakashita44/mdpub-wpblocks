@@ -8,6 +8,7 @@
 - Frontmatter で投稿メタ（タイトル・slug・カテゴリ・タグ等）を管理
 - 画像アップロード時に決定論的 slug を使って既存判定（ステートレス）
 - 投稿時にローカル画像パスを WordPress メディア URL へ置換
+- コンテンツバリデーション（frontmatter 検証、画像パス・featured_image 実在チェック）
 - `@wordpress/blocks` のネイティブブロック生成により、投稿後もブロックエディタで自然に編集でき、テーマのブロックスタイルがそのまま適用される
 
 ## Quick Start（初回セットアップ〜初投稿）
@@ -169,6 +170,7 @@ npm run upload-media -- [--content-root <path>] <article-slug|path-to-article-di
 npm run publish -- [--content-root <path>] <article-slug|path-to-index-md>
 npm run pipeline -- [--content-root <path>] [--force-upload] <article-slug|path>
 npm run sync
+npm run validate-content -- [--content-root <path>] <glob>
 ```
 
 `mdpub` でも同等に実行可能:
@@ -179,6 +181,7 @@ mdpub upload-media [--content-root <path>] <article-slug|path-to-article-dir> [-
 mdpub publish [--content-root <path>] <article-slug|path-to-index-md>
 mdpub pipeline [--content-root <path>] [--force-upload] <article-slug|path>
 mdpub sync
+mdpub validate-content [--content-root <path>] <glob>
 ```
 
 ## 設定ファイル
