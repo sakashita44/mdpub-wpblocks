@@ -8,7 +8,7 @@
 - Frontmatter で投稿メタ（タイトル・slug・カテゴリ・タグ等）を管理
 - 画像アップロード時に決定論的 slug を使って既存判定（ステートレス）
 - 投稿時にローカル画像パスを WordPress メディア URL へ置換
-- コンテンツバリデーション（frontmatter 検証、画像パス・featured_image 実在チェック）
+- コンテンツバリデーション（frontmatter 検証、画像パス・featured_image 実在チェック、未対応トークン検出）
 - `@wordpress/blocks` のネイティブブロック生成により、投稿後もブロックエディタで自然に編集でき、テーマのブロックスタイルがそのまま適用される
 
 ## Quick Start（初回セットアップ〜初投稿）
@@ -158,6 +158,7 @@ mdpub sync
 
 1. `posts/<slug>/index.md` と `posts/<slug>/images/` を作成
 1. 本文に `![alt](images/photo.jpg "caption")` を記述
+1. `npm run validate-content -- posts/<slug>/index.md` で構文・frontmatter をチェック
 1. `npm run upload-media -- <slug>` で画像を同期
 1. `npm run publish -- <slug>` で `draft` 投稿
 1. WordPress 管理画面で内容確認後に手動公開
@@ -183,6 +184,16 @@ mdpub pipeline [--content-root <path>] [--force-upload] <article-slug|path>
 mdpub sync
 mdpub validate-content [--content-root <path>] [--strict] <glob>
 ```
+
+## validate-content オプション
+
+`--strict` を付けると、未対応トークン（Markdown 記法の変換非対応要素）もエラー扱いになり、終了コード `1` を返す。省略時は警告のみで正常終了する。
+
+| 終了コード | 意味                                                               |
+| ---------- | ------------------------------------------------------------------ |
+| `0`        | バリデーション成功                                                 |
+| `1`        | frontmatter / 画像パスエラー、または `--strict` 時の未対応トークン |
+| `2`        | 引数エラー（glob 未指定など）                                      |
 
 ## 設定ファイル
 
