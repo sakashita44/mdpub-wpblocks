@@ -46,7 +46,7 @@ const { absPath: contentRootAbsPath } = resolveContentRoot({
 
 // glob 展開（content root 起点の相対パターンと絶対パスの両方に対応）
 const resolvedPattern = resolve(contentRootAbsPath, globPattern);
-const files = globSync(resolvedPattern, { withFileTypes: false }) as string[];
+const files = globSync(resolvedPattern);
 
 if (files.length === 0) {
     console.error(
@@ -64,16 +64,10 @@ for (const filePath of files) {
 
     const errors = validateFrontmatterAll(frontmatter);
 
-    // slug が取得できた場合のみディレクトリ名との整合チェック
-    if (
-        frontmatter &&
-        typeof frontmatter === 'object' &&
-        typeof (frontmatter as Record<string, unknown>).slug === 'string'
-    ) {
-        const slugError = validateSlugDirMatch(
-            (frontmatter as Record<string, unknown>).slug as string,
-            mdPath,
-        );
+    // slug バリデーション通過時のみディレクトリ名との整合チェック
+    const fm = frontmatter as Record<string, unknown> | null;
+    if (fm && typeof fm.slug === 'string') {
+        const slugError = validateSlugDirMatch(fm.slug, mdPath);
         if (slugError) {
             errors.push(slugError);
         }

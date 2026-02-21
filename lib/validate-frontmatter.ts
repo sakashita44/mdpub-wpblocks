@@ -47,7 +47,7 @@ export function validateFrontmatterAll(
             message: 'categories は1件以上必要です',
         });
     } else if (
-        fm.categories.some((c: unknown) => typeof c !== 'string' || !c)
+        fm.categories.some((c: unknown) => typeof c !== 'string' || c === '')
     ) {
         errors.push({
             field: 'categories',
@@ -58,7 +58,7 @@ export function validateFrontmatterAll(
     if (
         fm.tags !== undefined &&
         (!Array.isArray(fm.tags) ||
-            fm.tags.some((t: unknown) => typeof t !== 'string' || !t))
+            fm.tags.some((t: unknown) => typeof t !== 'string' || t === ''))
     ) {
         errors.push({
             field: 'tags',

@@ -3,41 +3,15 @@
  */
 
 import type { Frontmatter } from './types.js';
+import { validateFrontmatterAll } from './validate-frontmatter.js';
 
-/** frontmatter の必須項目を検証する */
+/** frontmatter の必須項目を検証する（最初のエラーで throw） */
 export function validateFrontmatter(
     frontmatter: unknown,
 ): asserts frontmatter is Frontmatter {
-    if (!frontmatter || typeof frontmatter !== 'object') {
-        throw new Error('frontmatter が不正です');
-    }
-
-    const fm = frontmatter as Record<string, unknown>;
-
-    if (!fm.title || typeof fm.title !== 'string') {
-        throw new Error('frontmatter.title は必須です');
-    }
-
-    if (!fm.slug || typeof fm.slug !== 'string') {
-        throw new Error('frontmatter.slug は必須です');
-    }
-
-    if (
-        !Array.isArray(fm.categories) ||
-        fm.categories.length === 0 ||
-        fm.categories.some((c: unknown) => typeof c !== 'string' || !c)
-    ) {
-        throw new Error(
-            'frontmatter.categories は1件以上の文字列配列で必須です',
-        );
-    }
-
-    if (
-        fm.tags !== undefined &&
-        (!Array.isArray(fm.tags) ||
-            fm.tags.some((t: unknown) => typeof t !== 'string' || !t))
-    ) {
-        throw new Error('frontmatter.tags は文字列配列で指定してください');
+    const errors = validateFrontmatterAll(frontmatter);
+    if (errors.length > 0) {
+        throw new Error(errors[0].message);
     }
 }
 
