@@ -5,10 +5,19 @@
  * 実際にファイルとして存在するかを検証する。
  */
 
-import { existsSync } from 'node:fs';
+import { statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { extractImagePaths } from './media-slug.js';
 import type { ValidationError } from './validate-frontmatter.js';
+
+/** パスが通常ファイルとして存在するか判定する */
+function isFile(absPath: string): boolean {
+    try {
+        return statSync(absPath).isFile();
+    } catch {
+        return false;
+    }
+}
 
 /** 記事本文中の画像パスが実在するか検証する */
 export function validateImagePaths(
@@ -24,7 +33,7 @@ export function validateImagePaths(
         if (/^https?:\/\//.test(imgPath)) continue;
 
         const absPath = resolve(articleDir, imgPath);
-        if (!existsSync(absPath)) {
+        if (!isFile(absPath)) {
             errors.push({
                 field: 'image',
                 message: `画像ファイルが見つかりません: ${imgPath}`,
@@ -41,11 +50,12 @@ export function validateFeaturedImage(
     mdPath: string,
 ): ValidationError | null {
     const featuredImage = frontmatter.featured_image;
-    if (typeof featuredImage !== 'string') return null;
+    if (typeof featuredImage !== 'string' || featuredImage.trim() === '')
+        return null;
 
     const articleDir = dirname(mdPath);
     const absPath = resolve(articleDir, featuredImage);
-    if (!existsSync(absPath)) {
+    if (!isFile(absPath)) {
         return {
             field: 'featured_image',
             message: `featured_image のファイルが見つかりません: ${featuredImage}`,
