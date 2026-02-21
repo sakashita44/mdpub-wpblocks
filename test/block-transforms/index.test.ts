@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseMd } from '../../lib/md-parser.js';
 import { transformTokens } from '../../lib/block-transforms/index.js';
-import { mockToken } from '../helpers/mock-token.js';
+import { mockToken, mockInlineToken } from '../helpers/mock-token.js';
 
 const noPlugins = new Set<string>();
 
@@ -99,5 +99,47 @@ const x = 1;
         const { blocks } = transformTokens(tokens, new Set());
         expect(blocks).toHaveLength(1);
         expect(blocks[0].name).toBe('core/embed');
+    });
+
+    it('inline children の未対応トークンを unsupported_inline_token として収集', () => {
+        const inlineToken = mockInlineToken([
+            mockToken({ type: 'text', content: 'hello' }),
+            mockToken({ type: 'footnote_ref' }),
+            mockToken({ type: 'abbr_open' }),
+        ]);
+        inlineToken.map = [10, 11];
+        const tokens = [inlineToken];
+
+        const { warnings } = transformTokens(tokens, noPlugins);
+        const inlineWarnings = warnings.filter(
+            (w) => w.type === 'unsupported_inline_token',
+        );
+        expect(inlineWarnings).toHaveLength(2);
+        expect(inlineWarnings[0]).toEqual({
+            type: 'unsupported_inline_token',
+            tokenType: 'footnote_ref',
+            line: 10,
+        });
+        expect(inlineWarnings[1]).toEqual({
+            type: 'unsupported_inline_token',
+            tokenType: 'abbr_open',
+            line: 10,
+        });
+    });
+
+    it('inline children の対応済みトークンは警告に含まれない', () => {
+        const inlineToken = mockInlineToken([
+            mockToken({ type: 'text', content: 'normal' }),
+            mockToken({ type: 'strong_open' }),
+            mockToken({ type: 'text', content: 'bold' }),
+            mockToken({ type: 'strong_close' }),
+        ]);
+        const tokens = [inlineToken];
+
+        const { warnings } = transformTokens(tokens, noPlugins);
+        const inlineWarnings = warnings.filter(
+            (w) => w.type === 'unsupported_inline_token',
+        );
+        expect(inlineWarnings).toHaveLength(0);
     });
 });

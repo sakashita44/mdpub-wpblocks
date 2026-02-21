@@ -24,9 +24,13 @@ import { extractDisplayMath, transformDisplayMath } from '../plugins/katex.js';
 import { extractStandaloneUrl, transformEmbed } from './embed.js';
 import { transformHtml } from './html.js';
 import { transformColumns } from './columns.js';
-import { CONSUMED_TOKEN_TYPES } from './token-types.js';
+import { CONSUMED_TOKEN_TYPES, HANDLED_INLINE_TYPES } from './token-types.js';
 
-export { HANDLED_TOKEN_TYPES, CONSUMED_TOKEN_TYPES } from './token-types.js';
+export {
+    HANDLED_TOKEN_TYPES,
+    CONSUMED_TOKEN_TYPES,
+    HANDLED_INLINE_TYPES,
+} from './token-types.js';
 
 /** markdown-it トークン配列を Gutenberg ブロック配列に変換 */
 export function transformTokens(
@@ -42,12 +46,31 @@ export function transformTokens(
         plugins,
     };
 
+    /** inline トークンの children から未対応トークンを収集 */
+    const collectInlineWarnings = (inlineToken: Token): void => {
+        if (!inlineToken.children) return;
+        for (const child of inlineToken.children) {
+            if (!HANDLED_INLINE_TYPES.has(child.type)) {
+                warnings.push({
+                    type: 'unsupported_inline_token',
+                    tokenType: child.type,
+                    line: inlineToken.map?.[0],
+                });
+            }
+        }
+    };
+
     const blocks: TransformTokensResult['blocks'] = [];
     const warnings: TransformWarning[] = [];
     let i = 0;
 
     while (i < tokens.length) {
         const token = tokens[i];
+
+        // inline トークンの children を検査
+        if (token.type === 'inline') {
+            collectInlineWarnings(token);
+        }
 
         switch (token.type) {
             // 段落: paragraph_open → inline → paragraph_close（3 トークン消費）

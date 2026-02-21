@@ -74,7 +74,8 @@ export function renderInline(
                 break;
             default:
                 // 未対応インライントークンはスキップ
-                // validate-tokens.ts で事前検出済み
+                // validate-content CLI で事前検出可能、
+                // transformTokens でも warnings として収集される
                 break;
         }
     }

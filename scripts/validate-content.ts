@@ -109,33 +109,26 @@ for (const filePath of files) {
         };
     });
 
+    // strict モードではトークン警告もエラー扱い
+    if (strict) {
+        errors.push(...tokenValidationItems);
+    }
+
     if (errors.length > 0) {
         hasErrors = true;
         console.error(`\n❌ ${mdPath}`);
         for (const err of errors) {
             console.error(`  - [${err.field}] ${err.message}`);
         }
+    } else {
+        console.log(`✅ ${mdPath}`);
     }
 
-    if (tokenValidationItems.length > 0) {
-        if (strict) {
-            hasErrors = true;
-            if (errors.length === 0) {
-                console.error(`\n❌ ${mdPath}`);
-            }
-            for (const item of tokenValidationItems) {
-                console.error(`  - [${item.field}] ${item.message}`);
-            }
-        } else {
-            if (errors.length === 0) {
-                console.log(`✅ ${mdPath}`);
-            }
-            for (const item of tokenValidationItems) {
-                console.warn(`  ⚠ [${item.field}] ${item.message}`);
-            }
+    // 非 strict 時のみトークン警告を表示
+    if (!strict && tokenValidationItems.length > 0) {
+        for (const item of tokenValidationItems) {
+            console.warn(`  ⚠ [${item.field}] ${item.message}`);
         }
-    } else if (errors.length === 0) {
-        console.log(`✅ ${mdPath}`);
     }
 }
 
