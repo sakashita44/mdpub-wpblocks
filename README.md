@@ -16,7 +16,7 @@
 ### 1) 前提
 
 - Node.js v20+
-- WordPress 6.x+（REST API が有効であること）
+- WordPress 6.x+（REST API v2 が有効であること。4.7+ で標準搭載）
 
 #### WordPress 側の設定
 

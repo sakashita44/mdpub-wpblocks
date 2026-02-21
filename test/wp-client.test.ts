@@ -37,6 +37,93 @@ describe('createWpClient', () => {
         globalThis.fetch = originalFetch;
     });
 
+    describe('checkApiCompatibility', () => {
+        it('namespaces に wp/v2 が含まれる場合は正常終了する', async () => {
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () =>
+                    Promise.resolve({
+                        namespaces: ['oembed/1.0', 'wp/v2'],
+                    }),
+            });
+
+            const wp = createWpClient(testConfig);
+            await expect(wp.checkApiCompatibility()).resolves.toBeUndefined();
+
+            // 認証なしで /wp-json/ を呼ぶこと
+            expect(globalThis.fetch).toHaveBeenCalledWith(
+                'https://example.com/wp-json/',
+            );
+        });
+
+        it('namespaces に wp/v2 が含まれない場合はエラーを投げる', async () => {
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () =>
+                    Promise.resolve({
+                        namespaces: ['oembed/1.0'],
+                    }),
+            });
+
+            const wp = createWpClient(testConfig);
+            await expect(wp.checkApiCompatibility()).rejects.toThrow(
+                'WP REST API v2 が有効でない可能性があります',
+            );
+        });
+
+        it('namespaces が存在しないレスポンスの場合はエラーを投げる', async () => {
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({}),
+            });
+
+            const wp = createWpClient(testConfig);
+            await expect(wp.checkApiCompatibility()).rejects.toThrow(
+                'WP REST API v2 が有効でない可能性があります',
+            );
+        });
+
+        it('/wp-json/ が失敗した場合 ?rest_route=/ にフォールバックする', async () => {
+            globalThis.fetch = vi
+                .fn()
+                .mockResolvedValueOnce({
+                    ok: false,
+                    status: 404,
+                    statusText: 'Not Found',
+                })
+                .mockResolvedValueOnce({
+                    ok: true,
+                    json: () =>
+                        Promise.resolve({
+                            namespaces: ['wp/v2'],
+                        }),
+                });
+
+            const wp = createWpClient(testConfig);
+            await expect(wp.checkApiCompatibility()).resolves.toBeUndefined();
+
+            expect(globalThis.fetch).toHaveBeenNthCalledWith(
+                1,
+                'https://example.com/wp-json/',
+            );
+            expect(globalThis.fetch).toHaveBeenNthCalledWith(
+                2,
+                'https://example.com/?rest_route=%2F',
+            );
+        });
+
+        it('ネットワークエラー時に適切なエラーメッセージを投げる', async () => {
+            globalThis.fetch = vi
+                .fn()
+                .mockRejectedValue(new Error('connect ECONNREFUSED'));
+
+            const wp = createWpClient(testConfig);
+            await expect(wp.checkApiCompatibility()).rejects.toThrow(
+                'WordPress REST API に接続できません',
+            );
+        });
+    });
+
     describe('findMediaBySlug', () => {
         it('slug 一致するメディアを返す', async () => {
             const media = { id: 123, slug: 'article-a-photo' };

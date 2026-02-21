@@ -25,7 +25,7 @@ import {
     resolveArticleDirPath,
 } from '../lib/cli-config.js';
 import { resolveProjectRoot } from '../lib/project-root.js';
-import type { WpClientConfig } from '../lib/types.js';
+import type { WpClientConfig, WpClient } from '../lib/types.js';
 
 const projectRoot = resolveProjectRoot(import.meta.url);
 
@@ -126,14 +126,15 @@ if (images.length === 0) {
 
 // --- WP クライアント初期化 ---
 let config: WpClientConfig;
+let wp: WpClient;
 try {
     config = getWpConfig();
+    wp = createWpClient(config);
+    await wp.checkApiCompatibility();
 } catch (e) {
     console.error((e as Error).message);
     process.exit(1);
 }
-
-const wp = createWpClient(config);
 
 // --- アップロード実行 ---
 console.log(`\n📁 記事: ${articleSlug}`);

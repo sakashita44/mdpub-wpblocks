@@ -156,7 +156,53 @@ export function createWpClient({
         return data;
     }
 
+    /** WP REST API ルートを取得し wp/v2 namespace の存在を確認する */
+    async function fetchRootDiscovery(): Promise<{ namespaces?: string[] }> {
+        const primaryUrl = `${baseUrl}/wp-json/`;
+        try {
+            const res = await fetch(primaryUrl);
+            if (res.ok) {
+                return (await res.json()) as { namespaces?: string[] };
+            }
+        } catch {
+            // primary 失敗 → fallback を試行
+        }
+
+        // ?rest_route=/ フォールバック
+        const fallbackUrl = `${baseUrl}/?rest_route=%2F`;
+        let res: Response;
+        try {
+            res = await fetch(fallbackUrl);
+        } catch (e) {
+            throw new Error(
+                `WordPress REST API に接続できません: ${baseUrl}\n` +
+                    `  詳細: ${(e as Error).message || String(e)}`,
+                { cause: e },
+            );
+        }
+
+        if (!res.ok) {
+            throw new Error(
+                `WordPress REST API に接続できません: ${res.status} ${res.statusText}\n` +
+                    `  URL: ${fallbackUrl}`,
+            );
+        }
+
+        return (await res.json()) as { namespaces?: string[] };
+    }
+
     return {
+        async checkApiCompatibility(): Promise<void> {
+            const root = await fetchRootDiscovery();
+            const namespaces = root.namespaces;
+
+            if (!Array.isArray(namespaces) || !namespaces.includes('wp/v2')) {
+                throw new Error(
+                    'WP REST API v2 が有効でない可能性があります（WordPress 4.7+ が必要です）',
+                );
+            }
+        },
+
         async findMediaBySlug(slug: string): Promise<WpMedia | null> {
             const results = await apiFetch<WpMedia[]>(
                 `/wp/v2/media?slug=${encodeURIComponent(slug)}&per_page=1`,
